@@ -485,13 +485,12 @@ class HomeTwoHeader extends Component {
                       </div>
                     </div>
                     <div className="inner-btn d-xl-none">
-                      <Link
-                        to={`http://localhost:3011`}
-                        onClick={this.scrollTop}
+                      <a
+                        href={`http://localhost:3011`}
                         className="primary-btn-fill"
                       >
                         {t("register_btn")}
-                      </Link>
+                      </a>
                     </div>
                   </nav>
                 </div>
@@ -507,12 +506,12 @@ class HomeTwoHeader extends Component {
                   >
                     <ul className="d-flex align-items-center nav-right-list" style={{direction: "ltr"}}>
                       <li className="nav-btn">
-                        <Link
+                        <a
                           className="primary-btn-fill"
-                          to={`http://localhost:3011`}
+                          href={`http://localhost:3011`}
                         >
                           {t("register_btn")}
-                        </Link>
+                        </a>
                       </li>
                       <li className="sidebar-style-two">
                         <Link to={"#"}>
