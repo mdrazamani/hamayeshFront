@@ -486,7 +486,7 @@ class HomeTwoHeader extends Component {
                     </div>
                     <div className="inner-btn d-xl-none">
                       <Link
-                        to={`${process.env.PUBLIC_URL}/event-details`}
+                        to={`http://localhost:3011`}
                         onClick={this.scrollTop}
                         className="primary-btn-fill"
                       >
@@ -509,7 +509,7 @@ class HomeTwoHeader extends Component {
                       <li className="nav-btn">
                         <Link
                           className="primary-btn-fill"
-                          to={`${process.env.PUBLIC_URL}/event-details`}
+                          to={`http://localhost:3011`}
                         >
                           {t("register_btn")}
                         </Link>
