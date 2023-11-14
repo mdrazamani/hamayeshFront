@@ -12,6 +12,7 @@ import { showDate } from "../../../utils/dateManager";
 import axios from "axios";
 import "../../../assets/css/mainStyle.css";
 import { AspectRatio } from "@material-ui/icons";
+import { decodeHtmlEntities } from "../../../utils/decodeHtmlEntities.js";
 
 class BlogDetails extends Component {
     constructor(props) {
@@ -460,7 +461,9 @@ class BlogDetails extends Component {
                                     >
                                         <div
                                             dangerouslySetInnerHTML={{
-                                                __html: news?.data?.description,
+                                                __html: decodeHtmlEntities(
+                                                    news?.data?.description
+                                                ),
                                             }}
                                         />
 

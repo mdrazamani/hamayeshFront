@@ -15,6 +15,7 @@ import RenderPagination from "../../common/pagination";
 import { showDate } from "../../../utils/dateManager";
 
 import urlM from "../../../utils/urlManager";
+import { decodeHtmlEntities } from "../../../utils/decodeHtmlEntities";
 
 class news extends Component {
     static contextType = DataContext; // Using the contextType to access the DataContext
@@ -185,8 +186,10 @@ class news extends Component {
                                                 marginBottom: "50px",
                                             }}
                                             dangerouslySetInnerHTML={{
-                                                __html: newsParent?.data
-                                                    ?.description,
+                                                __html: decodeHtmlEntities(
+                                                    newsParent?.data
+                                                        ?.description
+                                                ),
                                             }}
                                         />
                                     ) : (

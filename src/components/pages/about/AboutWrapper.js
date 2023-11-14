@@ -22,6 +22,7 @@ import FeatureIcon1 from "../../../assets/images/icons/speaker-md.png";
 import VideoShapeIcon from "../../../assets/images/shapes/play-btn.png";
 import DataContext from "../../../context/DataContext";
 import PosterModal from "../others/posterModal";
+import { decodeHtmlEntities } from "../../../utils/decodeHtmlEntities";
 
 class AboutWrapper extends Component {
     constructor(props) {
@@ -296,7 +297,9 @@ class AboutWrapper extends Component {
                             </div>
                             <div
                                 dangerouslySetInnerHTML={{
-                                    __html: hamayeshDetail?.data?.aboutHtml,
+                                    __html: decodeHtmlEntities(
+                                        hamayeshDetail?.data?.aboutHtml
+                                    ),
                                 }}
                             />
                         </div>

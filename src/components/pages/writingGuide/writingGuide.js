@@ -4,6 +4,7 @@ import { withTranslation } from "react-i18next";
 import { makeRoute } from "../../../utils/apiRoutes";
 import DataContext from "../../../context/DataContext";
 import "./write.css";
+import { decodeHtmlEntities } from "../../../utils/decodeHtmlEntities";
 
 class WritingGuide extends Component {
     static contextType = DataContext;
@@ -56,8 +57,10 @@ class WritingGuide extends Component {
                 <div className="description-container">
                     <div
                         dangerouslySetInnerHTML={{
-                            __html: hamayeshDetail?.data?.writingArticles
-                                ?.description,
+                            __html: decodeHtmlEntities(
+                                hamayeshDetail?.data?.writingArticles
+                                    ?.description
+                            ),
                         }}
                     />
                 </div>
