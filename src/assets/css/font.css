@@ -1,6 +1,13 @@
 @font-face {
-    font-family: 'mikhak'; 
-    src: url('../fonts/new/Mikhak.woff2') format('woff2');
-    font-weight: bold;
-    font-style: normal;
-  }
+  font-family: 'mikhak'; 
+  src: url('../fonts/new/Mikhak.woff2') format('woff2');
+  font-weight: bold;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'iranyekan'; 
+  src: url('../fonts/new/iranyekan/woff2/iranyekanwebregular(fanum).woff2') format('woff2');
+  font-weight: bold;
+  font-style: normal;
+}

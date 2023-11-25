@@ -22,12 +22,23 @@ import BlogIMG3 from "../../../assets/images/blog/b-md3.png";
 import DataContext from "../../../context/DataContext";
 import FetchDataService from "../../../utils/fetchDataFunc";
 import Error from "../../common/Error";
-import Loading from "../../common/Loading";
+// import Loading from "../../common/Loading";
 import { showDate } from "../../../utils/dateManager";
 
 // install Swiper modules
 SwiperCore.use([Autoplay, Pagination, Navigation, EffectFade]);
 class BlogArea extends Component {
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            language:
+                localStorage.getItem("language") ||
+                process.env.REACT_APP_DEFAULT_LANGUAGE,
+            number: 0,
+        };
+    }
+
     static contextType = DataContext; // Using the contextType to access the DataContext
 
     fetchDataFunction = () => {
@@ -49,8 +60,27 @@ class BlogArea extends Component {
     };
 
     componentDidMount() {
+        window.addEventListener("languageChanged", this.handleLanguageChange);
         this.fetchDataFunction();
     }
+    componentDidUpdate(prevProps, prevState) {
+        if (prevState.language !== this.state.language) {
+            this.fetchDataFunction();
+        }
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener(
+            "languageChanged",
+            this.handleLanguageChange
+        );
+    }
+
+    handleLanguageChange = (event) => {
+        if (event.detail !== this.state.language) {
+            this.setState({ language: event.detail });
+        }
+    };
 
     scrollTop() {
         window.scrollTo({
@@ -59,15 +89,17 @@ class BlogArea extends Component {
         });
     }
     render() {
+        const { language } = this.state;
+        // this.state.number += 1;
         const { t } = this.props;
 
         const { data, loading, error } = this.context;
 
         if (!data["newsData"]) return null;
 
-        if (loading["newsData"]) {
-            return <Loading />;
-        }
+        // if (loading["newsData"]) {
+        //     return <Loading />;
+        // }
 
         if (error["newsData"]) {
             return <Error message={error["newsData"].message} />;
@@ -107,7 +139,10 @@ class BlogArea extends Component {
         return (
             <>
                 {/* ===============  Blog area start =============== */}
-                <div className="blog-style-two pt-110 position-relative overflow-hidden">
+                <div
+                    className="blog-style-two pt-110 position-relative overflow-hidden"
+                    key={language + this.state.number}
+                >
                     <div className="container">
                         <div className="row">
                             <div className="section-head-style-two">

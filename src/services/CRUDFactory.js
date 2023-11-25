@@ -1,9 +1,23 @@
-// services/CRUDFactory.js
 const apiBaseURL = "http://127.0.0.1:8000/api/v1";
+
+let language =
+    localStorage.getItem("language") || process.env.REACT_APP_DEFAULT_LANGUAGE;
+window.addEventListener("languageChanged", (event) => {
+    language = event.detail;
+});
 
 class CRUDFactory {
     static async fetchWrapper(endpoint, options = {}) {
-        const response = await fetch(`${apiBaseURL}/${endpoint}`, options);
+        // اضافه کردن هدر accept-language
+        const headers = {
+            "Accept-Language": language,
+            ...options.headers,
+        };
+
+        const response = await fetch(`${apiBaseURL}/${endpoint}`, {
+            ...options,
+            headers,
+        });
         const data = await response.json();
         if (!response.ok) {
             throw new Error(

@@ -1,4 +1,5 @@
 import React from "react";
+import { withTranslation } from "react-i18next";
 import Modal from "react-modal";
 import FetchDataService from "../../../utils/fetchDataFunc";
 import DataContext from "../../../context/DataContext";
@@ -31,7 +32,8 @@ class PosterModal extends React.Component {
     };
 
     componentDidMount() {
-        if (!this.state.hamayeshDetail?.data?.poster) this.fetchDataFunction();
+        // if (!this.state.hamayeshDetail?.data?.poster) this.fetchDataFunction();
+        this.fetchDataFunction();
 
         Modal.setAppElement("#root");
     }
@@ -69,6 +71,7 @@ class PosterModal extends React.Component {
     }
 
     render() {
+        const { t } = this.props;
         const { data } = this.context;
         if (!data["HamayeshData"]) return null;
         this.state.hamayeshDetail = this.context.data["HamayeshData"] || [];
@@ -80,6 +83,11 @@ class PosterModal extends React.Component {
                 className="container"
                 style={{ textAlign: "center", marginTop: "150px" }}
             >
+                <div className="section-head-style-two">
+                    <h3>
+                        <span>{t("Conference_poster")}</span>
+                    </h3>
+                </div>
                 {this.renderImagePreview(
                     `${process.env.REACT_APP_SERVER_IP}${this.state.hamayeshDetail?.data?.poster}`,
                     this.state.hamayeshDetail?.data?.faTitle
@@ -154,4 +162,4 @@ const imageStyle = {
     padding: "20px",
 };
 
-export default PosterModal;
+export default withTranslation()(PosterModal);

@@ -7,11 +7,24 @@ import RenderPagination from "../../common/pagination.js";
 
 import DataContext from "../../../context/DataContext";
 import Error from "../../common/Error";
-import Loading from "../../common/Loading";
+
 import { makeRoute } from "../../../utils/apiRoutes";
 import FetchDataService from "../../../utils/fetchDataFunc.js";
+import BreadcrumbComponent from "../../common/breadcrumb.js";
+import HelmetComponent from "../../common/helmet.js";
 
 class Speaker extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            openNodes: {},
+            language:
+                localStorage.getItem("language") ||
+                process.env.REACT_APP_DEFAULT_LANGUAGE,
+            number: 0,
+        };
+    }
+
     static contextType = DataContext; // Using the contextType to access the DataContext
 
     fetchDataFunction = () => {
@@ -34,8 +47,27 @@ class Speaker extends Component {
     };
 
     componentDidMount() {
+        window.addEventListener("languageChanged", this.handleLanguageChange);
         this.fetchDataFunction();
     }
+    componentDidUpdate(prevProps, prevState) {
+        if (prevState.language !== this.state.language) {
+            this.fetchDataFunction();
+        }
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener(
+            "languageChanged",
+            this.handleLanguageChange
+        );
+    }
+
+    handleLanguageChange = (event) => {
+        if (event.detail !== this.state.language) {
+            this.setState({ language: event.detail });
+        }
+    };
 
     scrollTop() {
         window.scrollTo({
@@ -45,15 +77,17 @@ class Speaker extends Component {
     }
 
     render() {
+        const { language } = this.state;
+        // this.state.number += 1;
         const { t } = this.props;
         const { data, loading, error } = this.context;
 
         if (!data["speakerData"]) return null;
 
         // Check if the data is being fetched
-        if (loading["speakerData"]) {
-            return <Loading />;
-        }
+        // if (loading["speakerData"]) {
+        //     return <Loading />;
+        // }
 
         // Check for errors
         if (error["speakerData"]) {
@@ -66,46 +100,20 @@ class Speaker extends Component {
 
         return (
             <>
-                {/* ===============  breadcrumb area start =============== */}
-                <div
-                    className="breadcrumb-area"
-                    style={{
-                        backgroundImage: `linear-gradient(rgba(45, 55, 60, 0.7) 100%, rgba(45, 55, 60, 0.7) 100%), url('${
-                            process.env.REACT_APP_SERVER_IP +
-                            hamayeshDetail?.data?.headerImage
-                        }')`,
-                    }}
-                >
-                    <div className="container">
-                        <div className="row align-items-end">
-                            <div className="col-lg-12">
-                                <div className="breadcrumb-content">
-                                    <div className="page-outlined-text">
-                                        <h1>{t("speaker")}</h1>
-                                    </div>
-                                    <h2 className="page-title">
-                                        {t("speaker")}
-                                    </h2>
-                                    <ul className="page-switcher">
-                                        <li>
-                                            <Link
-                                                onClick={this.scrollTop}
-                                                to={`${process.env.PUBLIC_URL}/`}
-                                            >
-                                                Home{" "}
-                                                <i className="bi bi-caret-left" />
-                                            </Link>
-                                        </li>
-                                        <li>{t("speaker")}</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {/* ===============  breadcrumb area end =============== */}
-                {/* ===============  speakers area start =============== */}
-                <div className="speakers-wrapper ">
+                <HelmetComponent
+                    title="speaker"
+                    description="speaker_meta_desc"
+                    imageUrl={
+                        process.env.REACT_APP_SERVER_IP +
+                        hamayeshDetail?.data?.headerImage
+                    }
+                />
+                <BreadcrumbComponent
+                    translate="speaker"
+                    headerImageUrl={hamayeshDetail?.data?.headerImage}
+                />
+
+                <div className="speakers-wrapper " key={language}>
                     <div className="container position-relative pt-110">
                         <div className="row">
                             <div className="col-lg-12 ">

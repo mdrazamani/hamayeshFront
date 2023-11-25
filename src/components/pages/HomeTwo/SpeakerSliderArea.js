@@ -23,10 +23,21 @@ import SpeakerIMG3 from "../../../assets/images/speaker/speaker-s3.png";
 import DataContext from "../../../context/DataContext";
 import FetchDataService from "../../../utils/fetchDataFunc";
 import Error from "../../common/Error";
-import Loading from "../../common/Loading";
+// import Loading from "../../common/Loading";
 // install Swiper modules
 SwiperCore.use([Autoplay, Pagination, Navigation, EffectFade]);
 class SpeakerSliderArea extends Component {
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            language:
+                localStorage.getItem("language") ||
+                process.env.REACT_APP_DEFAULT_LANGUAGE,
+            number: 0,
+        };
+    }
+
     static contextType = DataContext; // Using the contextType to access the DataContext
 
     fetchDataFunction = () => {
@@ -48,8 +59,28 @@ class SpeakerSliderArea extends Component {
     };
 
     componentDidMount() {
+        window.addEventListener("languageChanged", this.handleLanguageChange);
         this.fetchDataFunction();
     }
+
+    componentDidUpdate(prevProps, prevState) {
+        if (prevState.language !== this.state.language) {
+            this.fetchDataFunction();
+        }
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener(
+            "languageChanged",
+            this.handleLanguageChange
+        );
+    }
+
+    handleLanguageChange = (event) => {
+        if (event.detail !== this.state.language) {
+            this.setState({ language: event.detail });
+        }
+    };
 
     scrollTop() {
         window.scrollTo({
@@ -58,15 +89,18 @@ class SpeakerSliderArea extends Component {
         });
     }
     render() {
+        const { language } = this.state;
+        // this.state.number += 1;
+
         const { t } = this.props;
 
         const { data, loading, error } = this.context;
 
         if (!data["speakersData"]) return null;
 
-        if (loading["speakersData"]) {
-            return <Loading />;
-        }
+        // if (loading["speakersData"]) {
+        //     return <Loading />;
+        // }
 
         if (error["speakersData"]) {
             return <Error message={error["speakersData"].message} />;
@@ -107,7 +141,10 @@ class SpeakerSliderArea extends Component {
         return (
             <>
                 {/* ===============  Speaker area start =============== */}
-                <div className="speaker-area pt-110 position-relative">
+                <div
+                    className="speaker-area pt-110 position-relative"
+                    key={language + this.state.number}
+                >
                     <div className="watermark-bg mt-110">
                         <img src={BGtextIMG} alt="Imgs" className="img-fluid" />
                     </div>

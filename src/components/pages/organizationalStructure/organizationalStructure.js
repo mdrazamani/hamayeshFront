@@ -1,78 +1,111 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
 import { withTranslation } from "react-i18next";
-import TreeView from "@mui/lab/TreeView";
-import TreeItem from "@mui/lab/TreeItem";
-import { styled } from "@mui/system";
-import Avatar from "@mui/material/Avatar";
-import Typography from "@mui/material/Typography";
+
 import { makeRoute } from "../../../utils/apiRoutes";
 import DataContext from "../../../context/DataContext";
 import "../../../assets/css/mainStyle.css";
 
-import Tree from "react-d3-tree";
-
-import ReactFamilyTree from "react-family-tree";
-import GoJsDiagram from "../../common/GoJsDiagram";
-import FamilyTree from "@balkangraph/familytree.js";
 import FamilyTreeComponent from "./FamilyTreeComponent";
+
+import BreadcrumbComponent from "../../common/breadcrumb.js";
+import HelmetComponent from "../../common/helmet.js";
 
 class OrganizerStructure extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            nodes: [
-                { id: "1", name: "John" },
-                { id: "2", parentId: "1", name: "Smith" },
-                { id: "3", parentId: "1", name: "Jane" },
-            ],
             rootId: 1,
+            language:
+                localStorage.getItem("language") ||
+                process.env.REACT_APP_DEFAULT_LANGUAGE,
+            number: 0,
         };
     }
 
     static contextType = DataContext;
 
     componentDidMount() {
+        window.addEventListener("languageChanged", this.handleLanguageChange);
         this.context.fetchData(makeRoute("secretariats"), "secretariatsData");
     }
 
-    dataCreator(data) {
-        let result = [];
+    componentDidUpdate(prevProps, prevState) {
+        if (prevState.language !== this.state.language) {
+            this.context.fetchData(
+                makeRoute("secretariats"),
+                "secretariatsData"
+            );
+        }
+    }
 
-        let i = 1;
+    componentWillUnmount() {
+        window.removeEventListener(
+            "languageChanged",
+            this.handleLanguageChange
+        );
+    }
+
+    handleLanguageChange = (event) => {
+        if (event.detail !== this.state.language) {
+            this.setState({ language: event.detail });
+        }
+    };
+
+    bossOne(data) {
+        const conferenceIndex = data.findIndex(
+            (item) => item.type === "conferance"
+        );
+
+        if (conferenceIndex > 0) {
+            const conferenceItem = data.splice(conferenceIndex, 1)[0];
+            data.unshift(conferenceItem);
+        }
+
+        return data;
+    }
+
+    dataCreator(data) {
+        data = this.bossOne(data);
+
+        let result = [];
+        let bossIdCounter = 1;
 
         data.forEach((sag) => {
-            let bossId = i;
             let boss = {
-                id: bossId,
-                name: sag.boss.firstName + " " + sag.boss.lastName,
-                fName: sag.title,
-                // img: sag.boss.profileImage,
-                img: process.env.REACT_APP_SERVER_IP + sag.boss.profileImage,
+                id: bossIdCounter,
             };
-            result.push(boss);
-            i++;
-            // Convert users data
 
+            // اگر نوع 'conferance' نیست، mid را به boss اضافه کنید
+            if (bossIdCounter != 1) boss.mid = 1;
+
+            boss.name = sag.boss.firstName + " " + sag.boss.lastName;
+            boss.fName = sag.title;
+            boss.img = process.env.REACT_APP_SERVER_IP + sag.boss.profileImage;
+
+            result.push(boss);
+            bossIdCounter++;
+
+            // تبدیل داده‌های کاربران
             sag.users.forEach((user) => {
                 let userTransformed = {
-                    id: i,
-                    mid: bossId,
+                    id: bossIdCounter,
+                    mid: boss.id, // به جای bossId از boss.id استفاده کنید
                     name: user.firstName + " " + user.lastName,
                     fName: user.role,
-                    // img: user.profileImage,
                     img: process.env.REACT_APP_SERVER_IP + user.profileImage,
                 };
-                i++;
+                bossIdCounter++;
                 result.push(userTransformed);
             });
         });
-        // Extract boss details and push to the result
 
         return result;
     }
 
     render() {
+        const { language } = this.state;
+        this.state.number += 1;
         const { t } = this.props;
         const { data } = this.context;
 
@@ -81,126 +114,100 @@ class OrganizerStructure extends Component {
         const secretariats = data["secretariatsData"] || [];
         const hamayeshDetail = this.context.data["hamayeshDetail"];
 
-        console.log("asasaas: ", this.dataCreator(secretariats?.data?.data));
+        console.log(
+            "this.dataCreator(secretariats?.data?.data): ",
+            this.dataCreator(secretariats?.data?.data)
+        );
 
         return (
             <>
-                <div
-                    className="breadcrumb-area"
-                    style={{
-                        backgroundImage: `linear-gradient(rgba(45, 55, 60, 0.7) 100%, rgba(45, 55, 60, 0.7) 100%), url('${
-                            process.env.REACT_APP_SERVER_IP +
-                            hamayeshDetail?.data?.headerImage
-                        }')`,
-                    }}
-                >
-                    <div className="container">
-                        <div className="row align-items-end">
-                            <div className="col-lg-12">
-                                <div className="breadcrumb-content">
-                                    <div className="page-outlined-text">
-                                        <h1>{t("organiation_stucture")}</h1>
-                                    </div>
-                                    <h2 className="page-title">
-                                        {t("organiation_stucture")}
-                                    </h2>
-                                    <ul className="page-switcher">
-                                        <li>
-                                            <Link
-                                                onClick={this.scrollTop}
-                                                to={`${process.env.PUBLIC_URL}/`}
-                                            >
-                                                Home{" "}
-                                                <i className="bi bi-caret-left" />
-                                            </Link>
-                                        </li>
-                                        <li>{t("organiation_stucture")}</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <HelmetComponent
+                    title="organiation_stucture"
+                    description="organiation_stucture_meta_desc"
+                    imageUrl={
+                        process.env.REACT_APP_SERVER_IP +
+                        hamayeshDetail?.data?.headerImage
+                    }
+                />
+                <BreadcrumbComponent
+                    translate="organiation_stucture"
+                    headerImageUrl={hamayeshDetail?.data?.headerImage}
+                />
 
-                <div>
+                <div key={language + this.state.number}>
                     <FamilyTreeComponent
-                        treeData={this.dataCreator(secretariats?.data?.data)}
-                        // treeData={[
-                        //     {
-                        //         id: 1,
-                        //         name: "محمدرضا زمانی",
-                        //         fName: "دبیرخانه علمی",
-                        //         img: "https://cdn.balkan.app/shared/m60/1.jpg",
-                        //     },
-                        //     {
-                        //         id: 2,
-                        //         mid: 1,
-                        //         name: "محمدرضا زمانی",
-                        //         fName: "admin",
-                        //         img: "https://cdn.balkan.app/shared/m60/1.jpg",
-                        //     },
-                        //     {
-                        //         id: 3,
-                        //         mid: 1,
-                        //         name: "محسن رضوانی",
-                        //         fName: "user",
-                        //         img: "https://cdn.balkan.app/shared/m60/1.jpg",
-                        //     },
-                        //     {
-                        //         id: 4,
-                        //         name: "محسن رضوانی",
-                        //         fName: "دبیرخانه اجرایی",
-                        //         img: "https://cdn.balkan.app/shared/m60/1.jpg",
-                        //     },
-                        //     {
-                        //         id: 5,
-                        //         mid: 4,
-                        //         name: "محمدرضا زمانی",
-                        //         fName: "admin",
-                        //         img: "https://cdn.balkan.app/shared/m60/1.jpg",
-                        //     },
-                        //     {
-                        //         id: 6,
-                        //         mid: 4,
-                        //         name: "محسن رضوانی",
-                        //         fName: "user",
-                        //         img: "https://cdn.balkan.app/shared/m60/1.jpg",
-                        //     },
-                        //     {
-                        //         id: 7,
-                        //         name: "محسن رضوانی",
-                        //         fName: "دبیرخانه سیاستگذاری",
-                        //         img: "https://cdn.balkan.app/shared/m60/1.jpg",
-                        //     },
-                        //     {
-                        //         id: 8,
-                        //         mid: 7,
-                        //         name: "محمدرضا زمانی",
-                        //         fName: "admin",
-                        //         img: "https://cdn.balkan.app/shared/m60/1.jpg",
-                        //     },
-                        //     {
-                        //         id: 9,
-                        //         mid: 7,
-                        //         name: "محسن رضوانی",
-                        //         fName: "user",
-                        //         img: "https://cdn.balkan.app/shared/m60/1.jpg",
-                        //     },
-                        //     {
-                        //         id: 10,
-                        //         mid: 7,
-                        //         name: "محمدرضا زمانی",
-                        //         fName: "admin",
-                        //         img: "https://cdn.balkan.app/shared/m60/1.jpg",
-                        //     },
-                        //     {
-                        //         id: 11,
-                        //         mid: 7,
-                        //         name: "محسن رضوانی",
-                        //         fName: "user",
-                        //         img: "https://cdn.balkan.app/shared/m60/1.jpg",
-                        //     },
-                        // ]}
+                        // treeData={this.dataCreator(secretariats?.data?.data)}
+                        treeData={[
+                            {
+                                id: 1,
+                                name: "علی رضوی",
+                                fName: "ریاست",
+                                img: "http://127.0.0.1:8000/public/uploads/personal/prsonal1.jpg",
+                            },
+                            {
+                                id: 2,
+                                mid: 1,
+                                name: "محمد صادقی",
+                                fName: "دبیرخانه اجرایی",
+                                img: "http://127.0.0.1:8000/public/uploads/personal/prsonal2.jpg",
+                            },
+                            {
+                                id: 3,
+                                mid: 2,
+                                name: "علی رضوی",
+                                fName: "admin",
+                                img: "http://127.0.0.1:8000/public/uploads/personal/prsonal1.jpg",
+                            },
+                            {
+                                id: 4,
+                                mid: 2,
+                                name: "محمد صادقی",
+                                fName: "admin",
+                                img: "http://127.0.0.1:8000/public/uploads/personal/prsonal2.jpg",
+                            },
+                            {
+                                id: 5,
+                                mid: 1,
+                                name: "محمد صادقی",
+                                fName: "دبیرخانه سیاستگذاری",
+                                img: "http://127.0.0.1:8000/public/uploads/personal/prsonal2.jpg",
+                            },
+                            {
+                                id: 6,
+                                mid: 5,
+                                name: "علی رضوی",
+                                fName: "admin",
+                                img: "http://127.0.0.1:8000/public/uploads/personal/prsonal1.jpg",
+                            },
+                            {
+                                id: 7,
+                                mid: 5,
+                                name: "محمد صادقی",
+                                fName: "admin",
+                                img: "http://127.0.0.1:8000/public/uploads/personal/prsonal2.jpg",
+                            },
+                            {
+                                id: 8,
+                                mid: 1,
+                                name: "علی رضوی",
+                                fName: "دبیرخانه علمی",
+                                img: "http://127.0.0.1:8000/public/uploads/personal/prsonal1.jpg",
+                            },
+                            {
+                                id: 9,
+                                mid: 8,
+                                name: "علی رضوی",
+                                fName: "admin",
+                                img: "http://127.0.0.1:8000/public/uploads/personal/prsonal1.jpg",
+                            },
+                            {
+                                id: 10,
+                                mid: 8,
+                                name: "محمد صادقی",
+                                fName: "admin",
+                                img: "http://127.0.0.1:8000/public/uploads/personal/prsonal2.jpg",
+                            },
+                        ]}
                     />
                 </div>
             </>

@@ -21,7 +21,7 @@ import DataContext from "../../../context/DataContext";
 import TimerSlider from "../../common/timerSlider";
 import FetchDataService from "../../../utils/fetchDataFunc";
 import Error from "../../common/Error";
-import Loading from "../../common/Loading";
+// import Loading from "../../common/Loading";
 import "../../../assets/css/mainStyle.css";
 
 // install Swiper modules
@@ -30,7 +30,11 @@ SwiperCore.use([Autoplay, Pagination, Navigation, EffectFade]);
 class HeroArea extends Component {
     constructor(props) {
         super(props);
-        this.state = {};
+        this.state = {
+            language:
+                localStorage.getItem("language") ||
+                process.env.REACT_APP_DEFAULT_LANGUAGE,
+        };
     }
 
     static contextType = DataContext; // Using the contextType to access the DataContext
@@ -54,19 +58,41 @@ class HeroArea extends Component {
     };
 
     componentDidMount() {
+        window.addEventListener("languageChanged", this.handleLanguageChange);
         this.fetchDataFunction();
     }
 
+    componentDidUpdate(prevProps, prevState) {
+        if (prevState.language !== this.state.language) {
+            this.fetchDataFunction();
+        }
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener(
+            "languageChanged",
+            this.handleLanguageChange
+        );
+    }
+
+    handleLanguageChange = (event) => {
+        if (event.detail !== this.state.language) {
+            this.setState({ language: event.detail });
+        }
+    };
+
     render() {
+        const { language } = this.state;
+        const sliderKey = `slider-${language}`;
         const { t } = this.props;
 
         const { data, loading, error } = this.context;
 
         if (!data["sliderData"]) return null;
 
-        if (loading["sliderData"]) {
-            return <Loading />;
-        }
+        // if (loading["sliderData"]) {
+        //     return <Loading />;
+        // }
 
         if (error["sliderData"]) {
             return <Error message={error["sliderData"].message} />;
@@ -91,8 +117,15 @@ class HeroArea extends Component {
             <>
                 {/* ===============  Hero style two start =============== */}
                 <div className="hero-style-two position-relative">
-                    <div className="swiper hero-two-slider">
-                        <Swiper {...sliderInit} className="swiper-wrapper">
+                    <div
+                        className="swiper hero-two-slider"
+                        style={{ direction: language === "fa" ? "rtl" : "ltr" }}
+                    >
+                        <Swiper
+                            key={sliderKey}
+                            {...sliderInit}
+                            className="swiper-wrapper"
+                        >
                             {sliders?.data?.data?.map((slider, index) => (
                                 <SwiperSlide
                                     className="hero-two-item hero-two-item-1 swiper-slide sliderImages"
@@ -123,7 +156,11 @@ class HeroArea extends Component {
                                                 )}
                                             </h5>
                                             {slider?.title ? (
-                                                <h2>{slider?.title}</h2>
+                                                <h2
+                                                    style={{ fontSize: "35px" }}
+                                                >
+                                                    {slider?.title}
+                                                </h2>
                                             ) : (
                                                 ""
                                             )}

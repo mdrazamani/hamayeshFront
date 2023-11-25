@@ -5,19 +5,63 @@ import { makeRoute } from "../../../utils/apiRoutes";
 import DataContext from "../../../context/DataContext";
 import "./write.css";
 import { decodeHtmlEntities } from "../../../utils/decodeHtmlEntities";
+import "../../../assets/css/ckeditor.css";
+import BreadcrumbComponent from "../../common/breadcrumb.js";
+import HelmetComponent from "../../common/helmet.js";
 
 class WritingGuide extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            openNodes: {},
+            language:
+                localStorage.getItem("language") ||
+                process.env.REACT_APP_DEFAULT_LANGUAGE,
+            number: 0,
+        };
+    }
+
     static contextType = DataContext;
 
-    componentDidMount() {}
+    componentDidMount() {
+        window.addEventListener("languageChanged", this.handleLanguageChange);
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener(
+            "languageChanged",
+            this.handleLanguageChange
+        );
+    }
+
+    handleLanguageChange = (event) => {
+        if (event.detail !== this.state.language) {
+            this.setState({ language: event.detail });
+        }
+    };
 
     render() {
+        const { language } = this.state;
+        // this.state.number += 1;
         const { t } = this.props;
         const hamayeshDetail = this.context.data["hamayeshDetail"];
 
         return (
             <>
-                <div
+                <HelmetComponent
+                    title="Essay_writing_guide"
+                    description="Essay_writing_guide_meta_desc"
+                    imageUrl={
+                        process.env.REACT_APP_SERVER_IP +
+                        hamayeshDetail?.data?.headerImage
+                    }
+                />
+                <BreadcrumbComponent
+                    translate="Essay_writing_guide"
+                    headerImageUrl={hamayeshDetail?.data?.headerImage}
+                />
+
+                {/* <div
                     className="breadcrumb-area"
                     style={{
                         backgroundImage: `linear-gradient(rgba(45, 55, 60, 0.7) 100%, rgba(45, 55, 60, 0.7) 100%), url('${
@@ -52,7 +96,7 @@ class WritingGuide extends Component {
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> */}
 
                 <div className="description-container">
                     <div
@@ -65,6 +109,7 @@ class WritingGuide extends Component {
                     />
                 </div>
                 <div
+                    key={language}
                     className="row"
                     style={{
                         textAlign: "center",

@@ -1,39 +1,33 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
+import { withTranslation } from "react-i18next";
 // image import
 import errorIllustration from "../../../assets/images/shapes/error-illustration.png";
+import DataContext from "../../../context/DataContext";
+import BreadcrumbComponent from "../../common/breadcrumb.js";
+import HelmetComponent from "../../common/helmet.js";
+
 class Error extends Component {
+    static contextType = DataContext; // Using the contextType to access the DataContext
+
     render() {
+        const { t } = this.props;
+        const hamayeshDetail = this.context.data["hamayeshDetail"];
+
         return (
             <>
-                {/* ===============  breadcrumb area start =============== */}
-                <div className="breadcrumb-area">
-                    <div className="container">
-                        <div className="row align-items-end">
-                            <div className="col-lg-12">
-                                <div className="breadcrumb-content">
-                                    <div className="page-outlined-text">
-                                        <h1>error</h1>
-                                    </div>
-                                    <h2 className="page-title">Error</h2>
-                                    <ul className="page-switcher">
-                                        <li>
-                                            <Link
-                                                to={`${process.env.PUBLIC_URL}/`}
-                                            >
-                                                Home{" "}
-                                                <i className="bi bi-caret-left" />
-                                            </Link>
-                                        </li>
-                                        <li>Error</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {/* ===============  breadcrumb area end =============== */}
-                {/* ===============  error area start =============== */}
+                <HelmetComponent
+                    title="conference_404"
+                    description="conference_404_meta_desc"
+                    imageUrl={
+                        process.env.REACT_APP_SERVER_IP +
+                        hamayeshDetail?.data?.headerImage
+                    }
+                />
+                <BreadcrumbComponent
+                    translate="conference_404"
+                    headerImageUrl={hamayeshDetail?.data?.headerImage}
+                />
                 <div className="error-wrapper mt-120">
                     <div className="container">
                         <div className="row">
@@ -46,13 +40,13 @@ class Error extends Component {
                                             className="img-fluid"
                                         />
                                     </div>
-                                    <h3>That Page Are Not Found</h3>
+                                    <h3>{t("That_Page_Are_Not_Found")}</h3>
                                     <div className="error-back-btn">
                                         <Link
                                             to={`${process.env.PUBLIC_URL}/`}
                                             className="primary-btn-fill"
                                         >
-                                            GO TO HOME
+                                            {t("GO_TO_HOME")}
                                         </Link>
                                     </div>
                                 </div>
@@ -66,4 +60,4 @@ class Error extends Component {
     }
 }
 
-export default Error;
+export default withTranslation()(Error);

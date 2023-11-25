@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 // page animation
 import WOW from "wowjs";
 import "../../../assets/css/animate.css";
+import "../../../assets/css/ckeditor.css";
 import AboutVideo from "../../../assets/images/about/a-mini-video.png";
 // mini gallary
 import MiniGallary1 from "../../../assets/images/about/a-mini1.png";
@@ -30,14 +31,32 @@ class AboutWrapper extends Component {
 
         this.state = {
             isOpen: false,
+            language:
+                localStorage.getItem("language") ||
+                process.env.REACT_APP_DEFAULT_LANGUAGE,
+            number: 0,
         };
     }
 
     static contextType = DataContext; // Using the contextType to access the DataContext
     componentDidMount() {
+        window.addEventListener("languageChanged", this.handleLanguageChange);
         // animation script
         new WOW.WOW().init();
     }
+
+    componentWillUnmount() {
+        window.removeEventListener(
+            "languageChanged",
+            this.handleLanguageChange
+        );
+    }
+
+    handleLanguageChange = (event) => {
+        if (event.detail !== this.state.language) {
+            this.setState({ language: event.detail });
+        }
+    };
 
     newsdataMaker() {
         const newsData = this.context.data["newsAboutData"];
@@ -65,6 +84,8 @@ class AboutWrapper extends Component {
 
     render() {
         const { t } = this.props;
+        const { language } = this.state;
+        // this.state.number += 1;
 
         const newsCount = this.newsdataMaker();
         const speakerCount = this.speakerdataMaker();
@@ -77,7 +98,10 @@ class AboutWrapper extends Component {
         return (
             <>
                 {/* =============== About wrapper start =============== */}
-                <div className="about-wrapper mt-96">
+                <div
+                    className="about-wrapper mt-96"
+                    key={language + this.state.number}
+                >
                     <div className="container">
                         <div className="about-company">
                             <div className="row">
@@ -85,7 +109,9 @@ class AboutWrapper extends Component {
                                     <div className="company-info">
                                         <h5>{t("Conference_about")}</h5>
                                         <h2 style={{ padding: "10px" }}>
-                                            {hamayeshDetail?.data?.faTitle}
+                                            {language === "fa"
+                                                ? hamayeshDetail?.data?.faTitle
+                                                : ""}
                                         </h2>
                                         <h2
                                             style={{
@@ -295,6 +321,7 @@ class AboutWrapper extends Component {
                             <div className="qoute-icon position-absolute">
                                 <img src={QuoteIcon} alt="Imgs" />
                             </div>
+
                             <div
                                 dangerouslySetInnerHTML={{
                                     __html: decodeHtmlEntities(

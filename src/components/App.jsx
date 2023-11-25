@@ -7,54 +7,40 @@ import "../assets/css/font.css";
 import { fontFamily } from "@mui/system";
 
 class Layout extends Component {
- 
   constructor(props) {
     super(props);
     this.state = {
-      textDirection: 'rtl', 
+      textDirection: localStorage.getItem("language") === "en" ? "ltr" : "rtl",
     };
   }
 
   componentDidMount() {
-    this.checkDirection();
+    this.languageChangedListener = (event) => {
+      const newDirection = event.detail === "en" ? "ltr" : "rtl";
+      this.setState({ textDirection: newDirection });
+    };
+
+    window.addEventListener("languageChanged", this.languageChangedListener);
   }
-  
-  checkDirection = () => {
-    if (process.env.REACT_APP_DEFAULT_LANGUAGE === "en") {
-      this.setState({ textDirection: "ltr" });
-    }
-  };
+
+  componentWillUnmount() {
+    window.removeEventListener("languageChanged", this.languageChangedListener);
+  }
 
   render() {
-    // return (
-    //   <>
-    //     <div style={{ direction: this.state.textDirection }}>
-    //       <Suspense fallback={<div>Loading translations...</div>}>
-    //         <LayoutHeader />
-    //         {this.props.children}
-    //       </Suspense>
-    //     </div>
-    //     <LayoutFooter />
-    //   </>
-    // );
-
-
     return (
       <>
-      <div style={{fontFamily: "mikhak"}}>
-          <div style={{ direction: this.state.textDirection, }}>
+        <div style={{ fontFamily: "mikhak" }}>
+          <div style={{ direction: this.state.textDirection }}>
             <Suspense fallback={<div>Loading translations...</div>}>
-              {/* <LayoutHeader /> */}
-              <HomeTwoHeader/>
+              <HomeTwoHeader />
               {this.props.children}
-              <LayoutFooter /> 
+              <LayoutFooter />
             </Suspense>
           </div>
         </div>
       </>
     );
-
-
   }
 }
 

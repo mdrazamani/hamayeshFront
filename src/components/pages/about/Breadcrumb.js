@@ -3,6 +3,9 @@ import { withTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import DataContext from "../../../context/DataContext";
 
+import BreadcrumbComponent from "../../common/breadcrumb.js";
+import HelmetComponent from "../../common/helmet.js";
+
 class Breadcrumb extends Component {
     static contextType = DataContext; // Using the contextType to access the DataContext
 
@@ -18,44 +21,18 @@ class Breadcrumb extends Component {
 
         return (
             <>
-                {/* ===============  breadcrumb area start =============== */}
-                <div
-                    className="breadcrumb-area"
-                    style={{
-                        backgroundImage: `linear-gradient(rgba(45, 55, 60, 0.7) 100%, rgba(45, 55, 60, 0.7) 100%), url('${
-                            process.env.REACT_APP_SERVER_IP +
-                            hamayeshDetail?.data?.headerImage
-                        }')`,
-                    }}
-                >
-                    <div className="container">
-                        <div className="row align-items-end">
-                            <div className="col-lg-12">
-                                <div className="breadcrumb-content">
-                                    <div className="page-outlined-text">
-                                        <h1>{t("About_Us")}</h1>
-                                    </div>
-                                    <h2 className="page-title">
-                                        {t("About_Us")}
-                                    </h2>
-                                    <ul className="page-switcher">
-                                        <li>
-                                            <Link
-                                                onClick={this.scrollTop}
-                                                to={`${process.env.PUBLIC_URL}/event-details`}
-                                            >
-                                                Home{" "}
-                                                <i className="bi bi-caret-left" />
-                                            </Link>
-                                        </li>
-                                        <li>{t("About_Us")}</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {/* ===============  breadcrumb area end =============== */}
+                <HelmetComponent
+                    title="About_Us"
+                    description="About_Us_meta_desc"
+                    imageUrl={
+                        process.env.REACT_APP_SERVER_IP +
+                        hamayeshDetail?.data?.headerImage
+                    }
+                />
+                <BreadcrumbComponent
+                    translate="About_Us"
+                    headerImageUrl={hamayeshDetail?.data?.headerImage}
+                />
             </>
         );
     }

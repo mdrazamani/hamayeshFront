@@ -13,11 +13,25 @@ import "swiper/swiper.min.css";
 
 import DataContext from "../../../context/DataContext";
 import Error from "../../common/Error";
-import Loading from "../../common/Loading";
+// import Loading from "../../common/Loading";
 import FetchDataService from "../../../utils/fetchDataFunc";
 import RenderPagination from "../../common/pagination";
 
+import BreadcrumbComponent from "../../common/breadcrumb.js";
+import HelmetComponent from "../../common/helmet.js";
+
 class Gallary extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            openNodes: {},
+            language:
+                localStorage.getItem("language") ||
+                process.env.REACT_APP_DEFAULT_LANGUAGE,
+            number: 0,
+        };
+    }
+
     static contextType = DataContext; // Using the contextType to access the DataContext
 
     fetchDataFunction = () => {
@@ -39,8 +53,28 @@ class Gallary extends Component {
     };
 
     componentDidMount() {
+        window.addEventListener("languageChanged", this.handleLanguageChange);
         this.fetchDataFunction();
     }
+
+    componentDidUpdate(prevProps, prevState) {
+        if (prevState.language !== this.state.language) {
+            this.fetchDataFunction();
+        }
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener(
+            "languageChanged",
+            this.handleLanguageChange
+        );
+    }
+
+    handleLanguageChange = (event) => {
+        if (event.detail !== this.state.language) {
+            this.setState({ language: event.detail });
+        }
+    };
 
     scrollTop() {
         window.scrollTo({
@@ -139,14 +173,16 @@ class Gallary extends Component {
             },
         });
 
+        const { language } = this.state;
+        // this.state.number += 1;
         const { t } = this.props;
         const { data, loading, error } = this.context;
 
         if (!data["galleryData"]) return null;
         // Check if the data is being fetched
-        if (loading["galleryData"]) {
-            return <Loading />;
-        }
+        // if (loading["galleryData"]) {
+        //     return <Loading />;
+        // }
 
         // Check for errors
         if (error["galleryData"]) {
@@ -158,43 +194,20 @@ class Gallary extends Component {
 
         return (
             <>
-                {/* ===============  breadcrumb area start =============== */}
-                <div
-                    className="breadcrumb-area"
-                    style={{
-                        backgroundImage: `linear-gradient(rgba(45, 55, 60, 0.7) 100%, rgba(45, 55, 60, 0.7) 100%), url('${
-                            process.env.REACT_APP_SERVER_IP +
-                            hamayeshDetail?.data?.headerImage
-                        }')`,
-                    }}
-                >
-                    <div className="container">
-                        <div className="row align-items-end">
-                            <div className="col-lg-12">
-                                <div className="breadcrumb-content">
-                                    <div className="page-outlined-text">
-                                        <h1>{t("Gallery")}</h1>
-                                    </div>
-                                    <h2 className="page-title">
-                                        {t("Gallery")}
-                                    </h2>
-                                    <ul className="page-switcher">
-                                        <li>
-                                            <Link to={"/"}>
-                                                Home{" "}
-                                                <i className="bi bi-caret-left" />
-                                            </Link>
-                                        </li>
-                                        <li>{t("Gallery")}</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {/* ===============  breadcrumb area end =============== */}
-                {/* ===============  gallary wrapper start =============== */}
-                <div className="gallary-wrapper">
+                <HelmetComponent
+                    title="Gallery"
+                    description="Gallery_meta_desc"
+                    imageUrl={
+                        process.env.REACT_APP_SERVER_IP +
+                        hamayeshDetail?.data?.headerImage
+                    }
+                />
+                <BreadcrumbComponent
+                    translate="Gallery"
+                    headerImageUrl={hamayeshDetail?.data?.headerImage}
+                />
+
+                <div className="gallary-wrapper" key={language}>
                     <div className="container pt-110 position-relative">
                         <div className="row">
                             <div className="col-lg-12">
@@ -213,14 +226,17 @@ class Gallary extends Component {
                                 key={"gallery-group-" + index}
                                 style={{
                                     marginBottom: "150px",
-                                    direction: "ltr",
+                                    // direction: "ltr",
                                 }}
                             >
                                 <div className="gallary-group-header">
                                     <h4 className="gallary-group-title">
                                         {gallery?.category}
                                     </h4>
-                                    <div className="gallary-arrows text-center d-lg-block d-none">
+                                    <div
+                                        className="gallary-arrows text-center d-lg-block d-none"
+                                        style={{ direction: "ltr" }}
+                                    >
                                         <div
                                             className={`gallary-button-prev gallary-prev-${index}`}
                                             tabIndex={0}
@@ -257,6 +273,30 @@ class Gallary extends Component {
                                 </div>
                             </div>
                         ))}
+
+                        {/* {galleries?.data?.data?.map((gallery, index) => (
+                            <div
+                                className="gallary-group"
+                                key={"gallery-group-" + index}
+                                style={{ marginBottom: "150px" }}
+                            >
+                                <div className="gallary-group-header">
+                                    <h4 className="gallary-group-title">
+                                        {gallery?.category}
+                                    </h4>
+                                    
+                                </div>
+                                <div className="row">
+                                    <div className="swiper gallary-slider">
+                                        <Gallery
+                                            images={gallery?.images}
+                                            galleryIndex={index}
+                                            getSwiperConfig={getSwiperConfig}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        ))} */}
                     </div>
                 </div>
 

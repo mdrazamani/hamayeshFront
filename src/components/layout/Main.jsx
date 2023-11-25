@@ -6,34 +6,33 @@ import LayoutFooter from "../common/LayoutFooter";
 import HomePageTwo from "../pages/HomeTwo/HomePageTwo";
 
 class MainLayout extends Component {
-  
   constructor(props) {
     super(props);
     this.state = {
-      textDirection: 'rtl', 
+      textDirection: localStorage.getItem("language") === "en" ? "ltr" : "rtl",
     };
   }
 
   componentDidMount() {
-    this.checkDirection();
+    this.languageChangedListener = (event) => {
+      const newDirection = event.detail === "en" ? "ltr" : "rtl";
+      this.setState({ textDirection: newDirection });
+    };
+
+    window.addEventListener("languageChanged", this.languageChangedListener);
   }
-  
-  checkDirection = () => {
-    if (process.env.REACT_APP_DEFAULT_LANGUAGE === "en") {
-      this.setState({ textDirection: "ltr" });
-    }
-  };
+
+  componentWillUnmount() {
+    window.removeEventListener("languageChanged", this.languageChangedListener);
+  }
 
   render() {
     return (
       <>
-      {/* main layout  */}
         <div style={{ direction: this.state.textDirection }}>
           <Suspense fallback={<div>Loading translations...</div>}>
             <HomeTwoHeader />
-            {/* <HomeTwoHeader /> */}
-              <HomePageTwo />
-            {/* <HomeOneFooter /> */}
+            <HomePageTwo />
             <LayoutFooter />
           </Suspense>
         </div>

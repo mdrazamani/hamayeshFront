@@ -7,15 +7,29 @@ import iconsIMG from "../../../assets/images/icons/c-phone.png";
 import cornarShape1 from "../../../assets/images/shapes/cornoer-shape1.png";
 import cornarShape2 from "../../../assets/images/shapes/cornoer-shape2.png";
 
-
+import axios from "axios";
 import DataContext from "../../../context/DataContext";
-import Error from "../../common/Error";
-import Loading from "../../common/Loading";
 import urlM from "../../../utils/urlManager.js";
-import { makeRoute } from "../../../utils/apiRoutes";
 
+import BreadcrumbComponent from "../../common/breadcrumb.js";
+import HelmetComponent from "../../common/helmet.js";
 
 class ContactPage extends Component {
+
+
+  constructor(props) {
+    super(props);
+    this.state = {
+        responseStatus: null,
+        responseData: null,
+        errors: null,
+        organId: null,
+        language:
+                localStorage.getItem("language") ||
+                process.env.REACT_APP_DEFAULT_LANGUAGE,
+            number: 0,
+    };
+}
 
 //   constructor(props) {
 //     super(props);
@@ -29,7 +43,7 @@ class ContactPage extends Component {
 
   
   componentDidMount() {
-    
+    window.addEventListener("languageChanged", this.handleLanguageChange);
 
 
     // const queryParams = {
@@ -44,6 +58,21 @@ class ContactPage extends Component {
 }
 
 
+
+
+componentWillUnmount() {
+  window.removeEventListener(
+      "languageChanged",
+      this.handleLanguageChange
+  );
+}
+
+handleLanguageChange = (event) => {
+  if (event.detail !== this.state.language) {
+      this.setState({ language: event.detail });
+  }
+};
+
   dataMaker() {
     const currentData = this.context.data["OrganizerDataHeader"];
     const currentSlug = urlM(window.location.pathname).slug;
@@ -54,14 +83,18 @@ class ContactPage extends Component {
         let organizerToSet = null;
 
         if (isContactPage) {
-        
             organizerToSet = currentData.data.data.find(item => item.isMain === true);
         } else {
-       
-            organizerToSet = currentData.data.data.find(item => item._id === currentSlug);
+            organizerToSet = currentData.data.data.find(item => item.id === currentSlug);
         }
 
+
+        // console.log("organizerToSet: ", organizerToSet?.id)
+
         if (organizerToSet) {
+            // this.setState({
+            //   organId: organizerToSet?.id,
+            // });
             return organizerToSet;
         }
     }
@@ -74,8 +107,54 @@ class ContactPage extends Component {
       behavior: "smooth",
     });
   }
-  render() {
 
+
+
+
+  handleSubmit = async (event) => {
+    
+    event.preventDefault();
+    this.setState({ responseStatus: "loading" });
+
+    const formData = new FormData(event.target);
+    const formObject = {};
+    let id = 0;
+    formData.forEach((value, key) => {
+        if (key == "id") id = value;
+        else formObject[key] = value;
+    });
+
+    try {
+        const response = await axios.post(
+            `${process.env.REACT_APP_API_BASE_URL}/ticket/${id}`,
+            formObject
+        );
+
+        if (response.status === 200) {
+            this.setState({
+                responseStatus: "success",
+                responseData: response.data,
+            });
+        } else {
+            this.setState({
+                responseStatus: "failed",
+                errors: response.data?.message || "An error occurred",
+            });
+        }
+    } catch (error) {
+        this.setState({
+            responseStatus: "failed",
+            errors: error.response?.data?.message || error.message,
+        });
+    }
+};
+
+
+
+
+  render() {
+    const { language } = this.state;
+    // this.state.number += 1;
     // if(this.state.organizer){
       // console.log("test: ", this.state.organizer);
       // console.log("hello")
@@ -85,9 +164,13 @@ class ContactPage extends Component {
       const hamayeshDetail = this.context.data["hamayeshDetail"];
     
 
+      // this.setState({
+      //   organId: organizer?.id,
+      // });
+
 
     // }
-    
+    const { responseStatus, responseData, errors } = this.state;
         const { t } = this.props;
         // const { data, loading, error } = this.context;
 
@@ -110,36 +193,22 @@ class ContactPage extends Component {
 
     return (
       <>
-        {/* ===============  breadcrumb area start =============== */}
-        <div className="breadcrumb-area" style={{
-        backgroundImage: `linear-gradient(rgba(45, 55, 60, 0.7) 100%, rgba(45, 55, 60, 0.7) 100%), url('${process.env.REACT_APP_SERVER_IP+hamayeshDetail?.data?.headerImage}')`
-    }}>
-          <div className="container">
-            <div className="row align-items-end">
-              <div className="col-lg-12">
-                <div className="breadcrumb-content">
-                  <div className="page-outlined-text">
-                    <h1>{t("Contact_Us")}</h1>
-                  </div>
-                  <h2 className="page-title">{organizer?.name}</h2>
-                  <ul className="page-switcher">
-                    <li>
-                      <Link
-                        onClick={this.scrollTop}
-                        to={`${process.env.PUBLIC_URL}/`}>
-                        Home <i className="bi bi-caret-left" />
-                      </Link>
-                    </li>
-                    <li>{t("Contact_Us")}</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        {/* ===============  breadcrumb area end =============== */}
-        {/* ===============  Contact wrapper start =============== */}
-        <div className="contact-wrapper overflow-hidden">
+
+<HelmetComponent
+                    title="Contact_Us"
+                    description="Contact_Us_meta_desc"
+                    imageUrl={
+                        process.env.REACT_APP_SERVER_IP +
+                        hamayeshDetail?.data?.headerImage
+                    }
+                />
+                <BreadcrumbComponent
+                    translate="Contact_Us"
+                    headerImageUrl={hamayeshDetail?.data?.headerImage}
+                />
+
+        
+        <div className="contact-wrapper overflow-hidden" key={language}>
           <div className="container pt-120 position-relative">
             <div className="background-title text-style-one">
               <h2>{organizer?.name}</h2>
@@ -203,38 +272,98 @@ class ContactPage extends Component {
                 </div>
               </div>
               <div className="col-lg-6">
-                <form action="#" id="contact-form">
+                <form onSubmit={this.handleSubmit} id="contact-form">
                   <div className="contact-form-wrapper">
-                    <h4 className="contact-form-title">Write a Message</h4>
+                    <h4 className="contact-form-title">{t("WRITE_A_MESSAGE")}</h4>
                     <div className="primary-input-group">
-                      <input type="text" id="name" placeholder="Your Name" />
+                      <input type="text" id="name" name="name" placeholder={t("first_Name")} />
                     </div>
                     <div className="primary-input-group">
-                      <input type="email" id="email" placeholder="Your Email" />
+                      <input type="email" id="email" name="email" placeholder={t("email")} />
                     </div>
                     <div className="primary-input-group">
-                      <input type="tel" id="phone" placeholder="Your Phone" />
+                      <input type="tel" id="phone" name="phone" placeholder={t("phoneNumber")} />
                     </div>
                     <div className="primary-input-group">
-                      <input type="text" id="subject" placeholder="Subject" />
+                      <input type="text" id="subject" name="subject" placeholder={t("Subject")} />
                     </div>
                     <div className="primary-input-group">
                       <textarea
-                        name="massege"
+                        name="message"
                         id="message"
                         cols={30}
                         rows={7}
-                        placeholder="Write Message"
+                        placeholder={t("Message_m")}
                         defaultValue={""}
                       />
                     </div>
+
+                    <input type="hidden" name="id" id="id" value={organizer?.id} />
+
                     <div className="submit-btn">
                       <button type="submit" className="primary-submit">
-                        Submit Now
+                        {t("send")}
                       </button>
                     </div>
                   </div>
                 </form>
+
+                <div style={{ marginTop: "20px" }}>
+                                            {/* ... other parts of your component ... */}
+
+                                            {/* Form submission result messages */}
+                                            {responseStatus === "loading" && (
+                                                <div
+                                                    className="alert alert-info"
+                                                    role="alert"
+                                                >
+                                                    {t("loading")}
+                                                </div>
+                                            )}
+                                            {responseStatus === "success" && (
+                                                <div
+                                                    className="alert alert-success"
+                                                    role="alert"
+                                                >
+                                                    {t("success")}:{" "}
+                                                    {responseData.message}
+                                                </div>
+                                            )}
+                                            {responseStatus === "failed" &&
+                                                errors && (
+                                                    <div
+                                                        className="alert alert-danger"
+                                                        role="alert"
+                                                    >
+                                                        {t("error")}:{" "}
+                                                        {typeof errors ===
+                                                        "string"
+                                                            ? errors
+                                                            : Object.entries(
+                                                                  errors
+                                                              ).map(
+                                                                  ([
+                                                                      key,
+                                                                      value,
+                                                                  ]) => (
+                                                                      <p
+                                                                          key={
+                                                                              key
+                                                                          }
+                                                                      >
+                                                                          {key}:{" "}
+                                                                          {
+                                                                              value
+                                                                          }
+                                                                      </p>
+                                                                  )
+                                                              )}
+                                                    </div>
+                                                )}
+
+                                            {/* ... rest of your rendering ... */}
+                                        </div>
+
               </div>
             </div>
           </div>

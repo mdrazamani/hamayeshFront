@@ -30,10 +30,10 @@ import DataProvider from "./context/DataProvider";
 /*initialization All css*/
 import "./index.css";
 import ErrorBoundary from "./utils/ErrorBoundary";
-import axie from "./components/pages/axie/axie";
+import Axie from "./components/pages/axie/axie";
 import OrganizerStructure from "./components/pages/organizationalStructure/organizationalStructure";
-import writingGuide from "./components/pages/writingGuide/writingGuide";
-import news from "./components/pages/Blog/news";
+import WritingGuide from "./components/pages/writingGuide/writingGuide";
+import News from "./components/pages/Blog/news";
 
 // default Warning Error hide
 // console.log = console.warn = console.error = () => {};
@@ -49,7 +49,7 @@ class Root extends React.Component {
     render() {
         return (
             <>
-                <BrowserRouter basename="/">
+                {/* <BrowserRouter basename="/">
                     <Switch>
                         <Route exact path="/" component={MainLayout} />
                         <Route
@@ -65,8 +65,6 @@ class Root extends React.Component {
                                 path={`${process.env.PUBLIC_URL}/contact`}
                                 component={ContactPage}
                             />
-
-                            {/* blog pages componets */}
                             <Route
                                 path={`${process.env.PUBLIC_URL}/blog`}
                                 component={Blog}
@@ -97,7 +95,6 @@ class Root extends React.Component {
                                 component={SpeakersDetails}
                             />
 
-                            {/* Event pages components */}
                             <Route
                                 path={`${process.env.PUBLIC_URL}/event`}
                                 component={Events}
@@ -111,7 +108,6 @@ class Root extends React.Component {
                                 component={EventDetails}
                             />
 
-                            {/* page menu components */}
                             <Route
                                 path={`${process.env.PUBLIC_URL}/schedule`}
                                 component={Schedule}
@@ -145,11 +141,103 @@ class Root extends React.Component {
                                 path={`${process.env.PUBLIC_URL}/news`}
                                 component={news}
                             />
-                            <Route
-                                path={`${process.env.PUBLIC_URL}/error`}
-                                component={Error}
-                            />
                         </Layout>
+                    </Switch>
+                </BrowserRouter> */}
+
+                <BrowserRouter basename="/">
+                    <Switch>
+                        <Route exact path="/" component={MainLayout} />
+
+                        <Route path={`${process.env.PUBLIC_URL}/about`}>
+                            <Layout>
+                                <About />
+                            </Layout>
+                        </Route>
+                        <Route path={`${process.env.PUBLIC_URL}/contact`}>
+                            <Layout>
+                                <ContactPage />
+                            </Layout>
+                        </Route>
+
+                        <Route path={`${process.env.PUBLIC_URL}/blog-details`}>
+                            <Layout>
+                                <BlogDetails />
+                            </Layout>
+                        </Route>
+
+                        <Route path={`${process.env.PUBLIC_URL}/blog-sidebar`}>
+                            <Layout>
+                                <BlogSidebar />
+                            </Layout>
+                        </Route>
+
+                        <Route path={`${process.env.PUBLIC_URL}/speaker`}>
+                            <Layout>
+                                <Speaker />
+                            </Layout>
+                        </Route>
+
+                        <Route
+                            path={`${process.env.PUBLIC_URL}/speaker-details`}
+                        >
+                            <Layout>
+                                <SpeakersDetails />
+                            </Layout>
+                        </Route>
+
+                        <Route path={`${process.env.PUBLIC_URL}/schedule`}>
+                            <Layout>
+                                <Schedule />
+                            </Layout>
+                        </Route>
+
+                        <Route path={`${process.env.PUBLIC_URL}/gallary`}>
+                            <Layout>
+                                <Gallary />
+                            </Layout>
+                        </Route>
+
+                        <Route path={`${process.env.PUBLIC_URL}/pricing`}>
+                            <Layout>
+                                <Pricing />
+                            </Layout>
+                        </Route>
+
+                        <Route path={`${process.env.PUBLIC_URL}/faq`}>
+                            <Layout>
+                                <FAQ />
+                            </Layout>
+                        </Route>
+
+                        <Route path={`${process.env.PUBLIC_URL}/axies`}>
+                            <Layout>
+                                <Axie />
+                            </Layout>
+                        </Route>
+
+                        <Route path={`${process.env.PUBLIC_URL}/structure`}>
+                            <Layout>
+                                <OrganizerStructure />
+                            </Layout>
+                        </Route>
+
+                        <Route path={`${process.env.PUBLIC_URL}/writing`}>
+                            <Layout>
+                                <WritingGuide />
+                            </Layout>
+                        </Route>
+
+                        <Route path={`${process.env.PUBLIC_URL}/news`}>
+                            <Layout>
+                                <News />
+                            </Layout>
+                        </Route>
+                        <Route>
+                            <Layout>
+                                <Error />
+                            </Layout>
+                        </Route>
                     </Switch>
                 </BrowserRouter>
             </>

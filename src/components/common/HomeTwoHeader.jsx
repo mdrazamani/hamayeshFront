@@ -16,33 +16,58 @@ import { withTranslation } from "react-i18next";
 
 import DataContext from "../../context/DataContext";
 import Error from "../common/Error";
-import Loading from "../common/Loading";
+// import Loading from "../common/Loading";
 import { makeRoute } from "../../utils/apiRoutes";
 import Timer from "./timer";
 import "../../assets/css/mainStyle.css";
+import FetchDataService from "../../utils/fetchDataFunc.js";
+import LanguageSelector from "../language/LanguageSelector.js";
 
 
 class HomeTwoHeader extends Component {
 
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+      language: localStorage.getItem('language') || process.env.REACT_APP_DEFAULT_LANGUAGE,
+      number: 0,
+    };
   }
 
-
   static contextType = DataContext; // Using the contextType to access the DataContext
-  componentDidMount() {
-    // this.ScrtiptInit();
 
+
+    fetchDataFunction = () => {
+        // Options should be set according to the parameters your API needs
+        const options = {
+            page: 1,
+            totalPages: 12, // this should probably be 'pageSize'
+            // fields: "description,title,user,_id",
+            dataName: "secretariatsData",
+            api: {
+                apiTitle: "secretariats",
+                id: null, // If these values are unnecessary, you could remove them
+                subTitle: null, // same as above
+                options: null, // same as above
+            },
+        };
+
+        // Here, we're passing the context's fetchData method to our service
+        FetchDataService(this.context.fetchData, options);
+    };
+
+
+ 
+
+  componentDidMount() {
+    window.addEventListener('languageChanged', this.handleLanguageChange);
+    this.fetchDataFunction();
 
   // Assuming 'speaker' is the endpoint and the key you want to use for the fetched data
   this.context.fetchData(
       makeRoute("hamayesh-detail"),
       "hamayeshDetail"
   );
-
-
-
  
   // Assuming 'speaker' is the endpoint and the key you want to use for the fetched data
   this.context.fetchData(
@@ -51,6 +76,27 @@ class HomeTwoHeader extends Component {
   );
     
   }
+
+  componentWillUnmount() {
+    window.removeEventListener('languageChanged', this.handleLanguageChange);
+}
+
+handleLanguageChange = (event) => {
+    if (event.detail !== this.state.language) {
+        this.setState({ language: event.detail });
+    }
+};
+
+componentDidUpdate(prevProps, prevState) {
+  if (prevState.language !== this.state.language) {
+      this.context.fetchData(makeRoute("secretariats"), "secretariatsData");
+      this.context.fetchData(makeRoute("hamayesh-detail"), "hamayeshDetail");
+      this.context.fetchData(makeRoute("organizers"), "OrganizerDataHeader");
+  }
+}
+
+
+
 // all jquery script 
   ScrtiptInit() {
     $(document).ready(function () {
@@ -172,7 +218,19 @@ class HomeTwoHeader extends Component {
     });
   }
 
+  dataMaker() {
+    const currentData = this.context.data["OrganizerDataHeader"];
+   
+    if (currentData) {
+        return currentData.data.data.find(item => item.isMain === true);
+    }
+  }
+
   render() {
+    const { language } = this.state;
+    this.state.number += 1;
+    const organizerKey = `organizer-${language}`; 
+    const structureKey = `structure-${language}`; 
 
     const {t} = this.props;
 
@@ -180,6 +238,7 @@ class HomeTwoHeader extends Component {
 
         if (!data["hamayeshDetail"]) return null;
         if (!data["OrganizerDataHeader"]) return null;
+        if (!data["secretariatsData"]) return null;
 
         // Check if the data is being fetched
         // if (loading["hamayeshDetail"]) {
@@ -194,6 +253,15 @@ class HomeTwoHeader extends Component {
         // Assuming data['hamayeshDetail'] is an array of speakers. Adjust depending on your actual data structure
         const hamayeshDetail = data["hamayeshDetail"] || [];
         const organizers = data["OrganizerDataHeader"] || [];
+
+        const organizer = this.dataMaker();
+        console.log("organizer-header :", organizer)
+
+        const secretariats = data["secretariatsData"] || [];
+
+
+     
+
 
         this.ScrtiptInit();
 
@@ -211,30 +279,45 @@ class HomeTwoHeader extends Component {
       },
     };
     return (
+      <div >
       <>
         {/* schedule-sidebar Area  start*/}
         <div className="schedule-sidebar">
-          <div className="schedule-sidebar-wrapper">
+          <div className="schedule-sidebar-wrapper"  key={language+this.state.number}>
             <div className="sb-toggle-icon">
               <i className="bi bi-x-lg" />
             </div>
 
-            <h3 style={{textAlign: "center", fontWeight: "bold", padding: "15px", marginBottom: "20px"}}>{hamayeshDetail?.data?.faTitle}</h3>
+            <h3 style={{textAlign: "center", fontWeight: "bold", padding: "15px", marginBottom: "20px"}}>{
+            language === "fa" ? hamayeshDetail?.data?.faTitle : hamayeshDetail?.data?.enTitle
+            }</h3>
 
             <Timer dates={{ start: hamayeshDetail?.data?.dates?.start }} />
 
             <div className="sb-speakers-wrap">
               <h3>{t("Organizers")}</h3>
               <div className="sb-speakers-slider swiper organ-header">
-                <Swiper {...sidebarSlider} className="swiper-wrapper">
+                <Swiper key={organizerKey} {...sidebarSlider} className="swiper-wrapper">
                 {organizers?.data?.data.map((organizer, index) =>(
                   <SwiperSlide className="swiper-slide" key={index}>
                     <div className="sb-speaker-card">
                       <div className="sb-speaker-thumb">
+                        <Link 
+                        to={`contact/${organizer?.id}`}
+                        onClick={this.scrollTop}
+                        replace
+                        >
                         <img src={process.env.REACT_APP_SERVER_IP + organizer?.logo} alt={organizer?.name} />
+                        </Link>
                       </div>
                       <div className="sb-speaker-content">
+                        <Link 
+                        to={`contact/${organizer?.id}`}
+                        onClick={this.scrollTop}
+                        replace
+                        >
                         <h4>{organizer?.name}</h4>
+                        </Link>
                         {organizer?.isMain && <span> {t("isMain")} </span>}
                       </div>
                     </div>
@@ -244,9 +327,36 @@ class HomeTwoHeader extends Component {
                 <div className="speaker-sb-pagination d-lg-flex d-none" />
               </div>
             </div>
+
+
+            <div className="sb-speakers-wrap">
+              <h3>{t("organiation_stucture")}</h3>
+              <div className="sb-speakers-slider swiper organ-header">
+                <Swiper key={structureKey} {...sidebarSlider} className="swiper-wrapper">
+                {secretariats?.data?.data.map((secretariat, index) =>(
+                  <SwiperSlide className="swiper-slide" key={index}>
+                    <div className="sb-speaker-card">
+                      <div style={{color: "#ce1446"}}>
+                        <h4>{secretariat?.title}</h4>
+                      </div>
+                      <div className="sb-speaker-thumb">
+                        <img src={process.env.REACT_APP_SERVER_IP + secretariat?.boss?.profileImage} alt={secretariat?.boss?.firstName+" "+secretariat?.boss?.lastName} />
+                      </div>
+                      <div className="sb-speaker-content">
+                        <h4>{secretariat?.boss?.firstName+" "+secretariat?.boss?.lastName}</h4>
+                      </div>
+                    </div>
+                  </SwiperSlide>
+                ))}
+                </Swiper>
+                <div className="speaker-sb-pagination d-lg-flex d-none" />
+              </div>
+            </div>
+            
+
             <div className="sb-about">
               <div className="footer-logo">
-                <img src={Logo} alt="Imgs" />
+                <img style={{borderRadius: "10px"}} src={Logo} alt="Imgs" />
               </div>
               <p>
                 {hamayeshDetail?.data?.description}
@@ -259,31 +369,41 @@ class HomeTwoHeader extends Component {
               </p>
 
               <ul className="footer-social-icon d-flex" style={{direction: "ltr"}}>
-                <li>
-                  <Link to={"#"}>
-                    <i className="fab fa-facebook-f" />
-                  </Link>
-                </li>
-                <li>
-                  <Link to={"#"}>
-                    <i className="fab fa-instagram" />
-                  </Link>
-                </li>
-                <li>
-                  <Link to={"#"}>
-                    <i className="fab fa-linkedin-in" />
-                  </Link>
-                </li>
-                <li>
-                  <Link to={"#"}>
-                    <i className="fab fa-twitter" />
-                  </Link>
-                </li>
-                <li>
-                  <Link to={"#"}>
-                    <i className="fab fa-whatsapp" />
-                  </Link>
-                </li>
+
+
+              {organizer?.socials?.facebook && (
+                        <li>
+                          <Link onClick={this.scrollTop} to={organizer?.socials?.facebook}>
+                            <i className="fab fa-facebook-f" />
+                          </Link>
+                        </li>
+                      )}
+
+                      {organizer?.socials?.linkedIn && (
+                        <li>
+                          <Link onClick={this.scrollTop} to={organizer?.socials?.linkedIn}>
+                          <i className="fab fa-linkedin-in" />
+                          </Link>
+                        </li>
+                      )}
+
+                      {organizer?.socials?.twitter && (
+                        <li>
+                          <Link onClick={this.scrollTop} to={organizer?.socials?.twitter}>
+                          <i className="fab fa-twitter" />
+                          </Link>
+                        </li>
+                      )}
+
+                      {organizer?.socials?.whatsapp && (
+                        <li>
+                          <Link onClick={this.scrollTop} to={organizer?.socials?.whatsapp}>
+                          <i className="fab fa-whatsapp" />
+                          </Link>
+                        </li>
+                      )}
+
+
               </ul>
             </div>
           </div>
@@ -331,7 +451,7 @@ class HomeTwoHeader extends Component {
                 >
                   <div className="logo d-flex align-items-center justify-content-between">
                     <Link to={`${process.env.PUBLIC_URL}/`}>
-                      <img src={Logo} alt="logo" style={{width: "80%"}} />
+                      <img  src={Logo} alt="logo" style={{width: "80%" , borderRadius: "10px"}} />
                     </Link>
                     <div className="mobile-menu d-flex">
                       <Link to={"#"} className="hamburger d-block d-xl-none">
@@ -346,7 +466,7 @@ class HomeTwoHeader extends Component {
                   <nav className="main-nav">
                     <div className="inner-logo d-xl-none">
                       <Link to={`${process.env.PUBLIC_URL}/`}>
-                        <img src={LogoV2} alt="Imgs" />
+                        <img style={{borderRadius: "10px"}} src={LogoV2} alt="Imgs" />
                       </Link>
                     </div>
                     <ul>
@@ -505,14 +625,26 @@ class HomeTwoHeader extends Component {
                 "
                   >
                     <ul className="d-flex align-items-center nav-right-list" style={{direction: "ltr"}}>
-                      <li className="nav-btn">
+                      <li className="nav-btn" style={{marginRight: "0px"}}>
                         <a
+                          style={{
+                            padding: "11px",
+                            fontSize: "17px"
+                          }}
                           className="primary-btn-fill"
                           href={`http://localhost:3011`}
                         >
                           {t("register_btn")}
                         </a>
                       </li>
+
+                   
+                        {/* <Link to={"#"}>
+                          <i className="bi bi-columns-gap" />
+                        </Link> */}
+                      <LanguageSelector/> 
+                    
+
                       <li className="sidebar-style-two">
                         <Link to={"#"}>
                           <i className="bi bi-columns-gap" />
@@ -531,6 +663,7 @@ class HomeTwoHeader extends Component {
         <div className="cursor2"></div>
         {/* Custom Cursor End  */}
       </>
+      </div>
     );
   }
 }

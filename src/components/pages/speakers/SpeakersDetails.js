@@ -16,16 +16,31 @@ import "swiper/swiper.min.css";
 
 import DataContext from "../../../context/DataContext";
 import Error from "../../common/Error";
-import Loading from "../../common/Loading";
+
 import urlM from "../../../utils/urlManager.js";
 import { makeRoute } from "../../../utils/apiRoutes";
+
+import BreadcrumbComponent from "../../common/breadcrumb.js";
+import HelmetComponent from "../../common/helmet.js";
 
 SwiperCore.use([Autoplay, Pagination, Navigation, EffectFade]);
 
 class SpeakersDetails extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            openNodes: {},
+            language:
+                localStorage.getItem("language") ||
+                process.env.REACT_APP_DEFAULT_LANGUAGE,
+            number: 0,
+        };
+    }
+
     static contextType = DataContext; // Using the contextType to access the DataContext
 
     componentDidMount() {
+        window.addEventListener("languageChanged", this.handleLanguageChange);
         const queryParams = {
             fields: "description,title,user,-_id", // example: retrieving only specific fields
         };
@@ -37,6 +52,33 @@ class SpeakersDetails extends Component {
         );
     }
 
+    componentDidUpdate(prevProps, prevState) {
+        if (prevState.language !== this.state.language) {
+            const queryParams = {
+                fields: "description,title,user,-_id", // example: retrieving only specific fields
+            };
+            // Assuming 'speaker' is the endpoint and the key you want to use for the fetched data
+            this.context.fetchData(
+                makeRoute("speakers", urlM(window.location.pathname).slug),
+                "speakerData",
+                queryParams
+            );
+        }
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener(
+            "languageChanged",
+            this.handleLanguageChange
+        );
+    }
+
+    handleLanguageChange = (event) => {
+        if (event.detail !== this.state.language) {
+            this.setState({ language: event.detail });
+        }
+    };
+
     scrollTop() {
         window.scrollTo({
             top: 0,
@@ -44,15 +86,17 @@ class SpeakersDetails extends Component {
         });
     }
     render() {
+        const { language } = this.state;
+        // this.state.number += 1;
         const { t } = this.props;
         const { data, loading, error } = this.context;
 
         if (!data["speakerData"]) return null;
 
         // Check if the data is being fetched
-        if (loading["speakerData"]) {
-            return <Loading />;
-        }
+        // if (loading["speakerData"]) {
+        //     return <Loading />;
+        // }
 
         // Check for errors
         if (error["speakerData"]) {
@@ -61,41 +105,23 @@ class SpeakersDetails extends Component {
 
         // Assuming data['speakerData'] is an array of speakers. Adjust depending on your actual data structure
         const speaker = data["speakerData"] || [];
-
+        const hamayeshDetail = this.context.data["hamayeshDetail"];
         return (
             <>
-                {/* ===============  breadcrumb area start =============== */}
-                <div className="breadcrumb-area">
-                    <div className="container">
-                        <div className="row align-items-end">
-                            <div className="col-lg-12">
-                                <div className="breadcrumb-content">
-                                    <div className="page-outlined-text">
-                                        <h1> {t("Speaker_Details")} </h1>
-                                    </div>
-                                    <h2 className="page-title">
-                                        {t("Speaker_Details")}
-                                    </h2>
-                                    <ul className="page-switcher">
-                                        <li>
-                                            <Link
-                                                onClick={this.scrollTop}
-                                                to={`${process.env.PUBLIC_URL}/`}
-                                            >
-                                                Home{" "}
-                                                <i className="bi bi-caret-left" />
-                                            </Link>
-                                        </li>
-                                        <li>{t("Speaker_Details")}</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {/* ===============  breadcrumb area end =============== */}
-                {/* ===============  Speaker details wrapper start =============== */}
-                <div className="speaker-details-wrapper ">
+                <HelmetComponent
+                    title="Speaker_Details"
+                    description="Speaker_Details_meta_desc"
+                    imageUrl={
+                        process.env.REACT_APP_SERVER_IP +
+                        hamayeshDetail?.data?.headerImage
+                    }
+                />
+                <BreadcrumbComponent
+                    translate="Speaker_Details"
+                    headerImageUrl={hamayeshDetail?.data?.headerImage}
+                />
+
+                <div className="speaker-details-wrapper " key={language}>
                     <div className="container pt-120 position-relative">
                         <div className="background-title text-style-one">
                             <h2>

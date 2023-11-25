@@ -94,7 +94,7 @@ class FamilyTreeComponent extends Component {
             if (this.props?.treeData?.length > 7) {
                 let viewBox = 0;
                 for (let i = 0; i < this.props?.treeData?.length - 7; i++) {
-                    viewBox += 200;
+                    viewBox += 0;
                 }
                 target.setAttribute("viewBox", `${viewBox} -200 1519 700`);
                 target.setAttribute("width", "100%");

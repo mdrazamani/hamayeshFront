@@ -2,26 +2,34 @@ import React, { Component } from "react";
 import { Link } from "react-router-dom";
 import { withTranslation } from "react-i18next";
 // page animation
-import WOW from "wowjs";
+
 import "../../../assets/css/animate.css";
 // image import
-import { makeStyles } from "@mui/styles";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemText from "@mui/material/ListItemText";
-import ListItemIcon from "@mui/material/ListItemIcon";
-import ArrowRightIcon from "@mui/icons-material/ArrowRight";
-import Paper from "@mui/material/Paper";
 
 import DataContext from "../../../context/DataContext";
 import Error from "../../common/Error";
-import Loading from "../../common/Loading";
-import { makeRoute } from "../../../utils/apiRoutes";
+// import Loading from "../../common/Loading";
+
 import FetchDataService from "../../../utils/fetchDataFunc";
 import RenderPagination from "../../common/pagination";
 import { showDate } from "../../../utils/dateManager";
+import NewsCategories from "./newsCats";
+
+import BreadcrumbComponent from "../../common/breadcrumb.js";
+import HelmetComponent from "../../common/helmet.js";
 
 class BlogSidebar extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            openNodes: {},
+            language:
+                localStorage.getItem("language") ||
+                process.env.REACT_APP_DEFAULT_LANGUAGE,
+            number: 0,
+        };
+    }
+
     static contextType = DataContext; // Using the contextType to access the DataContext
 
     fetchDataFunction = () => {
@@ -115,11 +123,34 @@ class BlogSidebar extends Component {
     }
 
     componentDidMount() {
+        window.addEventListener("languageChanged", this.handleLanguageChange);
         this.fetchDataFunction();
         this.fetchDataFunctionTags();
         this.fetchDataFunctionGallery();
         this.fetchDataFunctionNewsCats();
     }
+
+    componentDidUpdate(prevProps, prevState) {
+        if (prevState.language !== this.state.language) {
+            this.fetchDataFunction();
+            this.fetchDataFunctionTags();
+            this.fetchDataFunctionGallery();
+            this.fetchDataFunctionNewsCats();
+        }
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener(
+            "languageChanged",
+            this.handleLanguageChange
+        );
+    }
+
+    handleLanguageChange = (event) => {
+        if (event.detail !== this.state.language) {
+            this.setState({ language: event.detail });
+        }
+    };
 
     scrollTop() {
         window.scrollTo({
@@ -129,6 +160,8 @@ class BlogSidebar extends Component {
     }
 
     render() {
+        const { language } = this.state;
+        // this.state.number += 1;
         const organizer = this.dataMaker();
         const { t } = this.props;
         const { data, loading, error } = this.context;
@@ -139,9 +172,9 @@ class BlogSidebar extends Component {
         if (!data["newsCatData"]) return null;
 
         // Check if the data is being fetched
-        if (loading["newsData"]) {
-            return <Loading />;
-        }
+        // if (loading["newsData"]) {
+        //     return <Loading />;
+        // }
 
         // Check for errors
         if (error["newsData"]) {
@@ -167,44 +200,20 @@ class BlogSidebar extends Component {
 
         return (
             <>
-                {/* ===============  breadcrumb area start =============== */}
-                <div
-                    className="breadcrumb-area"
-                    style={{
-                        backgroundImage: `linear-gradient(rgba(45, 55, 60, 0.7) 100%, rgba(45, 55, 60, 0.7) 100%), url('${
-                            process.env.REACT_APP_SERVER_IP +
-                            hamayeshDetail?.data?.headerImage
-                        }')`,
-                    }}
-                >
-                    <div className="container">
-                        <div className="row align-items-end">
-                            <div className="col-lg-12">
-                                <div className="breadcrumb-content">
-                                    <div className="page-outlined-text">
-                                        <h1>{t("news")}</h1>
-                                    </div>
-                                    <h2 className="page-title">{t("news")}</h2>
-                                    <ul className="page-switcher">
-                                        <li>
-                                            <Link
-                                                onClick={this.scrollTop}
-                                                to={`${process.env.PUBLIC_URL}/`}
-                                            >
-                                                Home{" "}
-                                                <i className="bi bi-caret-left" />
-                                            </Link>
-                                        </li>
-                                        <li>{t("news")}</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {/* ===============  breadcrumb area end =============== */}
-                {/* =============== Blog area start =============== */}
-                <div className="blog-sidebar-wrapper ">
+                <HelmetComponent
+                    title="news"
+                    description="news_meta_desc"
+                    imageUrl={
+                        process.env.REACT_APP_SERVER_IP +
+                        hamayeshDetail?.data?.headerImage
+                    }
+                />
+                <BreadcrumbComponent
+                    translate="news"
+                    headerImageUrl={hamayeshDetail?.data?.headerImage}
+                />
+
+                <div className="blog-sidebar-wrapper " key={language}>
                     <div className="container position-relative pt-110">
                         <div className="row">
                             <div className="col-lg-12 ">
@@ -346,7 +355,10 @@ class BlogSidebar extends Component {
                                             <i className="bi bi-list-task" />{" "}
                                             <h4>{t("Category")}</h4>
                                         </div>
-                                        <ul className="category-list">
+
+                                        <NewsCategories newsCats={newsCats} />
+
+                                        {/* <ul className="category-list">
                                             {newsCats?.map((cat, index) => (
                                                 <li key={index}>
                                                     <Link
@@ -370,7 +382,7 @@ class BlogSidebar extends Component {
                                                     </Link>
                                                 </li>
                                             ))}
-                                        </ul>
+                                        </ul> */}
 
                                         {/* <CategoryTree
                                             categories={newsCats?.data}

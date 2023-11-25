@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import { Link } from "react-router-dom";
 import { withTranslation } from "react-i18next";
 import AchivmentArea from "./AchivmentArea";
 import BlogArea from "./BlogArea";
@@ -9,12 +10,16 @@ import SpeakerSliderArea from "./SpeakerSliderArea";
 import Slider from 'react-slick';
 import DataContext from "../../../context/DataContext";
 import Error from "../../common/Error";
-import Loading from "../../common/Loading";
+// import Loading from "../../common/Loading";
 import FetchDataService from "../../../utils/fetchDataFunc";
 import "slick-carousel/slick/slick.css"; 
 import "slick-carousel/slick/slick-theme.css";
 import "../../../assets/css/mainStyle.css";
 import PosterModal from "../others/posterModal";
+
+
+import LoadingComponent from "../../common/loading.js";
+import HelmetComponent from "../../common/helmet.js";
 
 class HomePageTwo extends Component {
   constructor(props) {
@@ -22,6 +27,10 @@ class HomePageTwo extends Component {
 
     this.state = {
         isZoomed: false,
+        language:
+                localStorage.getItem("language") ||
+                process.env.REACT_APP_DEFAULT_LANGUAGE,
+        number: 0
     };
 }
   static contextType = DataContext; // Using the contextType to access the DataContext
@@ -63,9 +72,29 @@ fetchDataFunctionSupporter = () => {
 };
 
 componentDidMount() {
+  window.addEventListener("languageChanged", this.handleLanguageChange);
     this.fetchDataFunction();
     this.fetchDataFunctionSupporter();
 }
+
+componentDidUpdate(prevProps, prevState) {
+  if (prevState.language !== this.state.language) {
+      this.fetchDataFunctionSupporter();
+  }
+}
+
+componentWillUnmount() {
+  window.removeEventListener(
+      "languageChanged",
+      this.handleLanguageChange
+  );
+}
+
+handleLanguageChange = (event) => {
+  if (event.detail !== this.state.language) {
+      this.setState({ language: event.detail });
+  }
+};
 
 dataMaker() {
   const currentData = this.context.data["OrganizerDataHeader"];
@@ -99,8 +128,21 @@ CompanyCard(t,company) {
     </span>
 }
 
-        {company.logo && <img src={process.env.REACT_APP_SERVER_IP + company.logo} alt={company.name} className="company-logo" />}
+        <Link 
+          to={`contact/${company?.id}`}
+          onClick={this.scrollTop}
+          replace
+          >
+          {company.logo && <img src={process.env.REACT_APP_SERVER_IP + company.logo} alt={company.name} className="company-logo" />}
+        </Link>
+        <Link 
+          to={`contact/${company?.id}`}
+          onClick={this.scrollTop}
+          replace
+          style={{color: "#222"}}
+          >
           <h4>{company.name}</h4>
+          </Link>
           {/* <p className="description">{company.details.description}</p> */}
           <a href={company.link} target="_blank" rel="noopener noreferrer" className="company-link">
               {t("Visit_Website")}
@@ -133,6 +175,13 @@ toggleZoom = () => {
 };
 
 
+scrollTop() {
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth",
+  });
+}
+
 
 renderImagePreview(src, alt) {
   const isZoomed = this.state.isZoomed;
@@ -150,6 +199,11 @@ renderImagePreview(src, alt) {
 
 
   render() {
+
+    const { language } = this.state;
+    this.state.number += 1;
+    const speakerKey = `speaker-${language}`; 
+    const newsKey = `news-${language}`; 
     const {t} = this.props;
 
     const { data, loading, error } = this.context;
@@ -157,9 +211,9 @@ renderImagePreview(src, alt) {
     if (!data["visitData"]) return null;
     if (!data["supportersData"]) return null;
 
-        if (loading["visitData"]) {
-            return <Loading />;
-        }
+        // if (loading["visitData"]) {
+        //     return <Loading />;
+        // }
 
         if (error["visitData"]) {
             return <Error message={error["visitData"].message} />;
@@ -169,7 +223,7 @@ renderImagePreview(src, alt) {
         //const supporters = data["supportersData"] || [];
         const Fsupporters = this.dataMakerSupporter("Financial");
 
-        console.log("Fsupporters: ", Fsupporters);
+
 
         const Asupporters = this.dataMakerSupporter("Academic");
 
@@ -207,8 +261,70 @@ renderImagePreview(src, alt) {
 
     return (
       <>
+        <div key={this.state.number}>
+        <HelmetComponent
+            title={this.state.language === "fa" ? hamayeshDetail?.data?.faTitle : hamayeshDetail?.data?.enTitle}
+            description={hamayeshDetail?.data?.description}
+            imageUrl={
+                process.env.REACT_APP_SERVER_IP +
+                hamayeshDetail?.data?.headerImage
+            }
+        />
+        <LoadingComponent />
+        </div>
         <HeroArea />
-        <div className="container" style={{textAlign: "center", marginTop: "150px"}}>
+
+
+
+
+        <div className="about-wrapper mt-96" style={{marginTop: "100px"}}>
+                    <div className="container">
+
+        <div className="about-company">
+                            <div className="row">
+                                <div className="col-lg-8">
+                                    <div className="company-info">
+                         
+                                        <h2 style={{ padding: "10px" }}>
+                                            {language === "fa"
+                                                ? hamayeshDetail?.data?.faTitle
+                                                : hamayeshDetail?.data?.enTitle}
+                                        </h2>
+                                       
+                                        <p style={{width: "70%"}}>
+                                            {hamayeshDetail?.data?.description}
+                                        </p>
+                                       
+                                    </div>
+                                </div>
+                                <div className="col-lg-4">
+                                    <div className="company-mini-gallary">
+                                    
+                                        <div className="Gallary-item3 Gallary-item">
+                                            
+                                            <div
+                                                style={{
+                                                    textAlign: "center",
+                                                    marginTop: "-150px",
+                                                }}
+                                            >
+                                                <PosterModal
+                                                    hamayeshDetail={
+                                                        hamayeshDetail
+                                                    }
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+                        </div>
+
+
+
+        <div className="container" style={{textAlign: "center", marginTop: "100px"}}>
             <div className="row">
               <div className="section-head-style-two"  style={{marginTop: "50px"}}>
                 <h3>
@@ -225,6 +341,9 @@ renderImagePreview(src, alt) {
             </div>
             </div>
         </div>
+
+  <div style={{height: "100px"}}></div>
+        <RecentEventSchedule />
 
         <div className="container" style={{textAlign: "center", marginTop: "150px",}}>
             <div className="row">
@@ -278,19 +397,16 @@ renderImagePreview(src, alt) {
             </div>
             </div> */}
 
-            <div style={{textAlign: "center", margin: "auto 0"}}>
-              <PosterModal hamayeshDetail={hamayeshDetail} />
-            </div>
-
+            
 
         {/* <EventArea /> */}
-        <RecentEventSchedule />
+       
         <AchivmentArea />
-        <SpeakerSliderArea />
+        <SpeakerSliderArea key={speakerKey} />
         {/* <SponsorSLiderArea /> */}
         {/* <Testimonial /> */}
         <PricingArea />
-        <BlogArea />
+        <BlogArea key={newsKey} />
 
         {/* <div className="statistics-container" style={{margin: "50px auto", fontFamily: "mikhak"}}>
             <h2>{t("Daily_visit_statistics")}</h2>

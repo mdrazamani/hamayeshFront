@@ -1,0 +1,5 @@
+.language-li2:hover {
+    transform: translateX(10px);
+    transition: all 0.3s ease-in-out;
+    color: #ce1446;
+}

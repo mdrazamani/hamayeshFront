@@ -10,7 +10,7 @@ import icon1IMG from "../../../assets/images/icons/speaker.png";
 import DataContext from "../../../context/DataContext";
 import FetchDataService from "../../../utils/fetchDataFunc";
 import Error from "../../common/Error";
-import Loading from "../../common/Loading";
+// import Loading from "../../common/Loading";
 
 class AchivementArea extends Component {
     static contextType = DataContext; // Using the contextType to access the DataContext

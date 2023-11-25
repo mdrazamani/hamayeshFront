@@ -1,37 +1,49 @@
 import React, { Component } from "react";
 import { withTranslation } from "react-i18next";
-import TreeView from "@mui/lab/TreeView";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import TreeItem from "@mui/lab/TreeItem";
-
 import { Tree } from "react-arborist";
-
-import InfoIcon from "@mui/icons-material/Info";
-import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
-import ArrowRightIcon from "@mui/icons-material/ArrowRight";
-import { styled } from "@mui/system";
-
 import DataContext from "../../../context/DataContext";
-import Error from "../../common/Error";
-import Loading from "../../common/Loading";
 import { makeRoute } from "../../../utils/apiRoutes";
-import { Link } from "react-router-dom";
-import CustomizedTreeView from "../../common/DataTree ";
+import BreadcrumbComponent from "../../common/breadcrumb.js";
+import HelmetComponent from "../../common/helmet.js";
 
 class AxisTree extends Component {
     constructor(props) {
         super(props);
         this.state = {
             openNodes: {},
+            language:
+                localStorage.getItem("language") ||
+                process.env.REACT_APP_DEFAULT_LANGUAGE,
+            number: 0,
         };
     }
 
     static contextType = DataContext; // Using the contextType to access the DataContext
     componentDidMount() {
+        window.addEventListener("languageChanged", this.handleLanguageChange);
         this.context.fetchData(makeRoute("axies", null, "ordered"), "axis");
         this.context.fetchData(makeRoute("axies"), "axisDataCount");
     }
+
+    componentDidUpdate(prevProps, prevState) {
+        if (prevState.language !== this.state.language) {
+            this.context.fetchData(makeRoute("axies", null, "ordered"), "axis");
+            this.context.fetchData(makeRoute("axies"), "axisDataCount");
+        }
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener(
+            "languageChanged",
+            this.handleLanguageChange
+        );
+    }
+
+    handleLanguageChange = (event) => {
+        if (event.detail !== this.state.language) {
+            this.setState({ language: event.detail });
+        }
+    };
 
     transformDataFunction = (data) => {
         return data?.map((item) => {
@@ -49,6 +61,7 @@ class AxisTree extends Component {
     };
 
     Node = ({ node, style, dragHandle }) => {
+        const { language } = this.state;
         const childrenCount = node?.data?.children?.length;
         const hasChildren = node?.data?.children?.length > 0;
         const additionalProps = hasChildren;
@@ -57,43 +70,12 @@ class AxisTree extends Component {
 
         const marginRight = 4 * level;
 
-        // const combinedStyle = {
-        //     ...style,
-        //     marginRight: hasChildren ? "" : "4%",
-        //     cursor: hasChildren ? "pointer" : "",
-        //     padding: "10px ", // increased padding for a more spacious look
-        //     fontSize: "18px", // slightly larger font size
-        //     fontWeight: "bold",
-        //     borderRadius: "5px", // rounded edges
-        //     boxShadow: "1px 2px 3px rgba(0, 0, 0, 0.08)",
-        //     transition: "background-color 0.2s", // smooth transition for hover effects
-        //     backgroundColor: hasChildren ? "#f5f5f5" : "#fff", // different background for nodes with children
-        //     ":hover": {
-        //         backgroundColor: "#000", // change background on hover
-        //     },
-        // };
-
-        // const isRootWithChildren = hasChildren && node?.data?.parent;
-
-        // const combinedStyle = {
-        //     ...style,
-        //     marginRight: isRootWithChildren ? "4%" : hasChildren ? "" : "4%",
-        //     cursor: hasChildren ? "pointer" : "",
-        //     padding: "10px ", // increased padding for a more spacious look
-        //     fontSize: "18px", // slightly larger font size
-        //     fontWeight: "bold",
-        //     borderRadius: "5px", // rounded edges
-        //     boxShadow: "1px 2px 3px rgba(0, 0, 0, 0.08)",
-        //     transition: "background-color 0.2s", // smooth transition for hover effects
-        //     backgroundColor: hasChildren ? "#f5f5f5" : "#fff", // different background for nodes with children
-        //     ":hover": {
-        //         backgroundColor: "#000", // change background on hover
-        //     },
-        // };
-
         const combinedStyle = {
             ...style,
-            marginRight: hasParent ? `${marginRight}%` : "0",
+            marginRight:
+                language === "fa" && hasParent ? `${marginRight}%` : "0",
+            marginLeft:
+                language === "en" && hasParent ? `${marginRight}%` : "0",
             cursor: hasChildren ? "pointer" : "",
             padding: "10px ", // increased padding for a more spacious look
             fontSize: "18px", // slightly larger font size
@@ -114,7 +96,7 @@ class AxisTree extends Component {
                 ref={dragHandle}
                 onClick={() => node.toggle()}
             >
-                {node?.data?.name}
+                {language === "fa" ? node?.data?.name : ""}
                 <span>
                     {" "}
                     {/* space between name and icon */}
@@ -124,11 +106,15 @@ class AxisTree extends Component {
                             : "🗂️"
                         : "🏷️"}
                 </span>
+                {language === "en" ? node?.data?.name : ""}
                 {hasChildren ? (
                     <div
                         style={{
                             display: "inline-block",
-                            float: "left",
+                            float:
+                                language === "fa"
+                                    ? "left"
+                                    : "right" /*****************/,
                             padding: "5px 10px",
                             borderRadius: "12px",
                             backgroundColor: "#e0e0e0",
@@ -149,8 +135,15 @@ class AxisTree extends Component {
     };
 
     render() {
+        const { language } = this.state;
+        this.state.number += 1;
+
         const { t } = this.props;
         const { data } = this.context;
+
+        if (!data["axis"]) return null;
+        if (!data["axisDataCount"]) return null;
+
         const axis = data["axis"] || [];
         const axisCount =
             data["axisDataCount"]?.data?.payload?.pagination?.total || [];
@@ -160,75 +153,56 @@ class AxisTree extends Component {
             window.innerWidth > 1200 ? 1000 : window.innerWidth * 0.8;
         const treeHeight = window.innerHeight * (axisCount * 0.08);
 
-        console.log("asasa: ", this.transformDataFunction(axis?.data));
-
         return (
             <>
-                <div
-                    className="breadcrumb-area"
-                    style={{
-                        backgroundImage: `linear-gradient(rgba(45, 55, 60, 0.7) 100%, rgba(45, 55, 60, 0.7) 100%), url('${
-                            process.env.REACT_APP_SERVER_IP +
-                            hamayeshDetail?.data?.headerImage
-                        }')`,
-                    }}
-                >
-                    <div className="container">
-                        <div className="row align-items-end">
-                            <div className="col-lg-12">
-                                <div className="breadcrumb-content">
-                                    <div className="page-outlined-text">
-                                        <h1>{t("conference_axes")}</h1>
-                                    </div>
-                                    <h2 className="page-title">
-                                        {t("conference_axes")}
-                                    </h2>
-                                    <ul className="page-switcher">
-                                        <li>
-                                            <Link
-                                                onClick={this.scrollTop}
-                                                to={`${process.env.PUBLIC_URL}/`}
-                                            >
-                                                Home{" "}
-                                                <i className="bi bi-caret-left" />
-                                            </Link>
-                                        </li>
-                                        <li>{t("conference_axes")}</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div
-                    style={{
-                        margin: "150px auto 20px auto", // This centers the div horizontally
-                        textAlign: "right",
-                        fontFamily: "Arial, sans-serif",
-                        overflow: "visible",
-                        display: "flex", // Flex container
-                        alignItems: "center", // Center vertically
-                        justifyContent: "center", // Center horizontally
-                        height: "100vh", // Full screen height
-                        fontFamily: "mikhak",
-                    }}
-                >
-                    <Tree
-                        initialData={this.transformDataFunction(axis?.data)}
-                        openByDefault={true}
-                        width={treeWidth}
-                        height={treeHeight}
-                        indent={24}
-                        rowHeight={54}
-                        overscanCount={1}
-                        paddingTop={30}
-                        paddingBottom={20}
-                        padding={25}
-                        style={{ overflow: "visible", margin: "0 auto" }}
+                <HelmetComponent
+                    title="conference_axes"
+                    description="conference_axes_meta_desc"
+                    imageUrl={
+                        process.env.REACT_APP_SERVER_IP +
+                        hamayeshDetail?.data?.headerImage
+                    }
+                />
+                <BreadcrumbComponent
+                    translate="conference_axes"
+                    headerImageUrl={hamayeshDetail?.data?.headerImage}
+                />
+                <div key={language + this.state.number}>
+                    <div
+                        style={{
+                            margin: "150px auto 20px auto", // This centers the div horizontally
+                            textAlign:
+                                language === "fa"
+                                    ? "right"
+                                    : "left" /*****************/,
+                            fontFamily: "Arial, sans-serif",
+                            overflow: "visible",
+                            display: "flex", // Flex container
+                            alignItems: "center", // Center vertically
+                            justifyContent: "center", // Center horizontally
+                            height: "100vh", // Full screen height
+                            fontFamily: "mikhak",
+                        }}
                     >
-                        {this.Node}
-                    </Tree>
+                        <Tree
+                            initialData={this.transformDataFunction(axis?.data)}
+                            openByDefault={true}
+                            width={treeWidth}
+                            height={treeHeight}
+                            indent={24}
+                            rowHeight={54}
+                            overscanCount={1}
+                            paddingTop={30}
+                            paddingBottom={20}
+                            padding={25}
+                            style={{
+                                overflow: "visible",
+                                margin: "0 auto",
+                            }}
+                        >
+                            {this.Node}
+                        </Tree>
+                    </div>
                 </div>
             </>
         );

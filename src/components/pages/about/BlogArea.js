@@ -11,6 +11,16 @@ import Error from "../../common/Error";
 import Loading from "../../common/Loading";
 
 class BlogArea extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            language:
+                localStorage.getItem("language") ||
+                process.env.REACT_APP_DEFAULT_LANGUAGE,
+            number: 0,
+        };
+    }
+
     static contextType = DataContext; // Using the contextType to access the DataContext
     fetchDataFunction = () => {
         // Options should be set according to the parameters your API needs
@@ -31,8 +41,21 @@ class BlogArea extends Component {
     };
 
     componentDidMount() {
+        window.addEventListener("languageChanged", this.handleLanguageChange);
         this.fetchDataFunction();
     }
+    componentWillUnmount() {
+        window.removeEventListener(
+            "languageChanged",
+            this.handleLanguageChange
+        );
+    }
+
+    handleLanguageChange = (event) => {
+        if (event.detail !== this.state.language) {
+            this.setState({ language: event.detail });
+        }
+    };
 
     scrollTop() {
         window.scrollTo({
@@ -42,6 +65,8 @@ class BlogArea extends Component {
     }
     render() {
         const { t } = this.props;
+        const { language } = this.state;
+        // this.state.number += 1;
 
         const { data, loading, error } = this.context;
 
@@ -60,7 +85,7 @@ class BlogArea extends Component {
         return (
             <>
                 {/* ===============  Blog area start  =============== */}
-                <div className="blog-area">
+                <div className="blog-area" key={language + this.state.number}>
                     <div className="container position-relative pt-120">
                         <div className="row">
                             <div className="col-lg-12 ">

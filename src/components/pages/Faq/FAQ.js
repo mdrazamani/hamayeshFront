@@ -4,19 +4,59 @@ import { withTranslation } from "react-i18next";
 
 import DataContext from "../../../context/DataContext";
 import Error from "../../common/Error";
-import Loading from "../../common/Loading";
+// import Loading from "../../common/Loading";
 import { makeRoute } from "../../../utils/apiRoutes";
 
+import BreadcrumbComponent from "../../common/breadcrumb.js";
+import HelmetComponent from "../../common/helmet.js";
+
 class FAQ extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            openNodes: {},
+            language:
+                localStorage.getItem("language") ||
+                process.env.REACT_APP_DEFAULT_LANGUAGE,
+            number: 0,
+        };
+    }
+
     static contextType = DataContext;
 
     componentDidMount() {
+        window.addEventListener("languageChanged", this.handleLanguageChange);
         const queryParams = {
-            fields: "description,title,items,_id",
+            fields: "-__v",
         };
-
         this.context.fetchData(makeRoute("questions"), "faqData", queryParams);
     }
+
+    componentDidUpdate(prevProps, prevState) {
+        if (prevState.language !== this.state.language) {
+            const queryParams = {
+                fields: "-__v",
+            };
+            this.context.fetchData(
+                makeRoute("questions"),
+                "faqData",
+                queryParams
+            );
+        }
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener(
+            "languageChanged",
+            this.handleLanguageChange
+        );
+    }
+
+    handleLanguageChange = (event) => {
+        if (event.detail !== this.state.language) {
+            this.setState({ language: event.detail });
+        }
+    };
 
     scrollTop() {
         window.scrollTo({
@@ -25,54 +65,40 @@ class FAQ extends Component {
         });
     }
     render() {
+        const { language } = this.state;
+        // this.state.number += 1;
         const { t } = this.props;
 
         const { data, loading, error } = this.context;
 
         if (!data["faqData"]) return null;
 
-        if (loading["faqData"]) {
-            return <Loading />;
-        }
+        // if (loading["faqData"]) {
+        //     return <Loading />;
+        // }
 
         if (error["faqData"]) {
             return <Error message={error["faqData"].message} />;
         }
 
         const questions = data["faqData"] || [];
-
+        const hamayeshDetail = this.context.data["hamayeshDetail"];
         return (
             <>
-                {/* ===============  breadcrumb area start =============== */}
-                <div className="breadcrumb-area">
-                    <div className="container">
-                        <div className="row align-items-end">
-                            <div className="col-lg-12">
-                                <div className="breadcrumb-content">
-                                    <div className="page-outlined-text">
-                                        <h1>{t("FAQ")}</h1>
-                                    </div>
-                                    <h2 className="page-title">{t("FAQ")}</h2>
-                                    <ul className="page-switcher">
-                                        <li>
-                                            <Link
-                                                onClick={this.scrollTop}
-                                                to={`${process.env.PUBLIC_URL}/`}
-                                            >
-                                                Home{" "}
-                                                <i className="bi bi-caret-left" />
-                                            </Link>
-                                        </li>
-                                        <li>{t("FAQ")}</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {/* ===============  breadcrumb area end =============== */}
-                {/* ===============  FAQ wrapper start =============== */}
-                <div className="faq-wrapper ">
+                <HelmetComponent
+                    title="FAQ"
+                    description="FAQ_meta_desc"
+                    imageUrl={
+                        process.env.REACT_APP_SERVER_IP +
+                        hamayeshDetail?.data?.headerImage
+                    }
+                />
+                <BreadcrumbComponent
+                    translate="FAQ"
+                    headerImageUrl={hamayeshDetail?.data?.headerImage}
+                />
+
+                <div className="faq-wrapper " key={language}>
                     <div className="container position-relative pt-110">
                         <div className="row">
                             <div className="col-lg-12">

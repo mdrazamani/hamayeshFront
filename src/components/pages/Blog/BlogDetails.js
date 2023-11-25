@@ -5,14 +5,19 @@ import { withTranslation } from "react-i18next";
 import Slider from "react-slick";
 import DataContext from "../../../context/DataContext";
 import Error from "../../common/Error";
-import Loading from "../../common/Loading";
+// import Loading from "../../common/Loading";
 import urlM from "../../../utils/urlManager.js";
 import FetchDataService from "../../../utils/fetchDataFunc.js";
 import { showDate } from "../../../utils/dateManager";
 import axios from "axios";
 import "../../../assets/css/mainStyle.css";
-import { AspectRatio } from "@material-ui/icons";
+
 import { decodeHtmlEntities } from "../../../utils/decodeHtmlEntities.js";
+import "../../../assets/css/ckeditor.css";
+import NewsCategories from "./newsCats.js";
+
+import BreadcrumbComponent from "../../common/breadcrumb.js";
+import HelmetComponent from "../../common/helmet.js";
 
 class BlogDetails extends Component {
     constructor(props) {
@@ -24,6 +29,10 @@ class BlogDetails extends Component {
             errors: null,
             newsNewsData: null,
             change: false,
+            language:
+                localStorage.getItem("language") ||
+                process.env.REACT_APP_DEFAULT_LANGUAGE,
+            number: 0,
         };
     }
 
@@ -156,12 +165,36 @@ class BlogDetails extends Component {
     }
 
     componentDidMount() {
+        window.addEventListener("languageChanged", this.handleLanguageChange);
         this.fetchDataFunction();
         this.fetchDataFunctionTags();
         this.fetchDataFunctionGallery();
         this.fetchDataFunctionNewsCats();
         this.fetchIP();
     }
+
+    componentDidUpdate(prevProps, prevState) {
+        if (prevState.language !== this.state.language) {
+            this.fetchDataFunction();
+            this.fetchDataFunctionTags();
+            this.fetchDataFunctionGallery();
+            this.fetchDataFunctionNewsCats();
+            // this.fetchIP();
+        }
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener(
+            "languageChanged",
+            this.handleLanguageChange
+        );
+    }
+
+    handleLanguageChange = (event) => {
+        if (event.detail !== this.state.language) {
+            this.setState({ language: event.detail });
+        }
+    };
 
     fetchIP = async () => {
         try {
@@ -243,9 +276,16 @@ class BlogDetails extends Component {
         });
 
         try {
+            const config = {
+                headers: {
+                    "Accept-Language": this.state.language,
+                },
+            };
+
             const response = await axios.post(
                 `${process.env.REACT_APP_API_BASE_URL}/news-comments`,
-                formObject
+                formObject,
+                config
             );
 
             if (response.status === 200) {
@@ -268,6 +308,9 @@ class BlogDetails extends Component {
     };
 
     render() {
+        const { language } = this.state;
+        // this.state.number += 1;
+
         const { responseStatus, responseData, errors } = this.state;
         const organizer = this.dataMaker();
         const { t } = this.props;
@@ -280,9 +323,9 @@ class BlogDetails extends Component {
         if (!data["newsNewsData"]) return null;
 
         // Check if the data is being fetched
-        if (loading["oneNewsData"]) {
-            return <Loading />;
-        }
+        // if (loading["oneNewsData"]) {
+        //     return <Loading />;
+        // }
 
         // Check for errors
         if (error["oneNewsData"]) {
@@ -331,46 +374,20 @@ class BlogDetails extends Component {
 
         return (
             <>
-                {/* ===============  breadcrumb area start =============== */}
-                <div
-                    className="breadcrumb-area"
-                    style={{
-                        backgroundImage: `linear-gradient(rgba(45, 55, 60, 0.7) 100%, rgba(45, 55, 60, 0.7) 100%), url('${
-                            process.env.REACT_APP_SERVER_IP +
-                            hamayeshDetail?.data?.headerImage
-                        }')`,
-                    }}
-                >
-                    <div className="container">
-                        <div className="row align-items-end">
-                            <div className="col-lg-12">
-                                <div className="breadcrumb-content">
-                                    <div className="page-outlined-text">
-                                        <h1>{t("Blog_Details")}</h1>
-                                    </div>
-                                    <h2 className="page-title">
-                                        {t("Blog_Details")}
-                                    </h2>
-                                    <ul className="page-switcher">
-                                        <li>
-                                            <Link
-                                                onClick={this.scrollTop}
-                                                to={`${process.env.PUBLIC_URL}/`}
-                                            >
-                                                Home{" "}
-                                                <i className="bi bi-caret-left" />
-                                            </Link>
-                                        </li>
-                                        <li>{t("Blog_Details")}</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {/* ===============  breadcrumb area end =============== */}
-                {/* =============== Blog area start =============== */}
-                <div className="blog-details-wrapper ">
+                <HelmetComponent
+                    title={news?.data?.title}
+                    description={news?.data?.description}
+                    imageUrl={
+                        process.env.REACT_APP_SERVER_IP +
+                        hamayeshDetail?.data?.headerImage
+                    }
+                />
+                <BreadcrumbComponent
+                    translate={news?.data?.title}
+                    headerImageUrl={hamayeshDetail?.data?.headerImage}
+                />
+
+                <div className="blog-details-wrapper " key={language}>
                     <div className="container position-relative pt-110">
                         <div className="background-title">
                             <h2>{t("Blog_Details")}</h2>
@@ -784,31 +801,7 @@ class BlogDetails extends Component {
                                             <i className="bi bi-list-task" />{" "}
                                             <h4>{t("Category")}</h4>
                                         </div>
-                                        <ul className="category-list">
-                                            {newsCats?.map((cat, index) => (
-                                                <li key={index}>
-                                                    <Link
-                                                        to={
-                                                            "/news/category/" +
-                                                            cat?.slug
-                                                        }
-                                                        replace
-                                                    >
-                                                        {cat?.title}
-                                                        <div className="category-lavel">
-                                                            <span>
-                                                                {
-                                                                    cat
-                                                                        ?.children
-                                                                        ?.length
-                                                                }
-                                                            </span>
-                                                            <i className="bi bi-box-arrow-right" />
-                                                        </div>
-                                                    </Link>
-                                                </li>
-                                            ))}
-                                        </ul>
+                                        <NewsCategories newsCats={newsCats} />
 
                                         {/* <CategoryTree
                                             categories={newsCats?.data}

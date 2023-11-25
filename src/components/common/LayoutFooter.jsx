@@ -4,7 +4,7 @@ import { withTranslation } from "react-i18next";
 
 import DataContext from "../../context/DataContext";
 import Error from "../common/Error";
-import Loading from "../common/Loading";
+// import Loading from "../common/Loading";
 import { makeRoute } from "../../utils/apiRoutes";
 
 class LayoutFooter extends Component {
@@ -57,6 +57,9 @@ dataMaker() {
 
     // Assuming data['speakerData'] is an array of speakers. Adjust depending on your actual data structure
     // const organizer = data["OrganizerData"].data.items[0] || [];
+
+
+    console.log("organizer: ", organizer)
 
     return (
       <>
@@ -214,31 +217,42 @@ dataMaker() {
                   </div>
                   <div className="col-lg-4 col-md-6 order-2 order-lg-3">
                     <ul className="d-flex footer-social-links justify-content-lg-end justify-content-center">
-                      <li>
-                        <Link onClick={this.scrollTop} to={"#"}>
-                          <i className="fab fa-facebook-f" />
-                        </Link>
-                      </li>
-                      <li>
-                        <Link onClick={this.scrollTop} to={"#"}>
-                          <i className="fab fa-instagram" />
-                        </Link>
-                      </li>
-                      <li>
-                        <Link onClick={this.scrollTop} to={"#"}>
+                     
+
+                      {organizer?.socials?.facebook && (
+                        <li>
+                          <Link onClick={this.scrollTop} to={organizer?.socials?.facebook}>
+                            <i className="fab fa-facebook-f" />
+                          </Link>
+                        </li>
+                      )}
+
+                      {organizer?.socials?.linkedIn && (
+                        <li>
+                          <Link onClick={this.scrollTop} to={organizer?.socials?.linkedIn}>
                           <i className="fab fa-linkedin-in" />
-                        </Link>
-                      </li>
-                      <li>
-                        <Link onClick={this.scrollTop} to={"#"}>
+                          </Link>
+                        </li>
+                      )}
+
+                      {organizer?.socials?.twitter && (
+                        <li>
+                          <Link onClick={this.scrollTop} to={organizer?.socials?.twitter}>
                           <i className="fab fa-twitter" />
-                        </Link>
-                      </li>
-                      <li>
-                        <Link onClick={this.scrollTop} to={"#"}>
+                          </Link>
+                        </li>
+                      )}
+
+                      {organizer?.socials?.whatsapp && (
+                        <li>
+                          <Link onClick={this.scrollTop} to={organizer?.socials?.whatsapp}>
                           <i className="fab fa-whatsapp" />
-                        </Link>
-                      </li>
+                          </Link>
+                        </li>
+                      )}
+
+                      
+                  
                     </ul>
                   </div>
                 </div>

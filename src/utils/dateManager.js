@@ -7,7 +7,25 @@ export function showDate(date, showTime = false) {
     let newDate;
     const timeFormat = showTime ? " HH:mm:ss" : "";
 
-    if (process.env.REACT_APP_DEFAULT_LANGUAGE === "fa") {
+    function determineLanguage() {
+        const languageFromLocalStorage = localStorage.getItem("language");
+
+        return (
+            languageFromLocalStorage ||
+            process.env.REACT_APP_DEFAULT_LANGUAGE ||
+            "en"
+        );
+    }
+
+    const lang = determineLanguage();
+    let direction = "rtl";
+    if (lang === "en") {
+        direction = "ltr";
+    } else {
+        direction = "rtl";
+    }
+
+    if (lang === "fa") {
         mj.loadPersian();
         newDate = mj(date)
             .locale("fa")
@@ -18,5 +36,9 @@ export function showDate(date, showTime = false) {
             .format("D MMMM YYYY" + timeFormat);
     }
 
-    return newDate;
+    return (
+        <div style={{ direction: direction, display: "inline-block" }}>
+            {newDate}
+        </div>
+    );
 }
