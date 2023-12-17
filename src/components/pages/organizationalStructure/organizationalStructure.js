@@ -136,78 +136,7 @@ class OrganizerStructure extends Component {
 
                 <div key={language + this.state.number}>
                     <FamilyTreeComponent
-                        // treeData={this.dataCreator(secretariats?.data?.data)}
-                        treeData={[
-                            {
-                                id: 1,
-                                name: "علی رضوی",
-                                fName: "ریاست",
-                                img: "http://127.0.0.1:8000/public/uploads/personal/prsonal1.jpg",
-                            },
-                            {
-                                id: 2,
-                                mid: 1,
-                                name: "محمد صادقی",
-                                fName: "دبیرخانه اجرایی",
-                                img: "http://127.0.0.1:8000/public/uploads/personal/prsonal2.jpg",
-                            },
-                            {
-                                id: 3,
-                                mid: 2,
-                                name: "علی رضوی",
-                                fName: "admin",
-                                img: "http://127.0.0.1:8000/public/uploads/personal/prsonal1.jpg",
-                            },
-                            {
-                                id: 4,
-                                mid: 2,
-                                name: "محمد صادقی",
-                                fName: "admin",
-                                img: "http://127.0.0.1:8000/public/uploads/personal/prsonal2.jpg",
-                            },
-                            {
-                                id: 5,
-                                mid: 1,
-                                name: "محمد صادقی",
-                                fName: "دبیرخانه سیاستگذاری",
-                                img: "http://127.0.0.1:8000/public/uploads/personal/prsonal2.jpg",
-                            },
-                            {
-                                id: 6,
-                                mid: 5,
-                                name: "علی رضوی",
-                                fName: "admin",
-                                img: "http://127.0.0.1:8000/public/uploads/personal/prsonal1.jpg",
-                            },
-                            {
-                                id: 7,
-                                mid: 5,
-                                name: "محمد صادقی",
-                                fName: "admin",
-                                img: "http://127.0.0.1:8000/public/uploads/personal/prsonal2.jpg",
-                            },
-                            {
-                                id: 8,
-                                mid: 1,
-                                name: "علی رضوی",
-                                fName: "دبیرخانه علمی",
-                                img: "http://127.0.0.1:8000/public/uploads/personal/prsonal1.jpg",
-                            },
-                            {
-                                id: 9,
-                                mid: 8,
-                                name: "علی رضوی",
-                                fName: "admin",
-                                img: "http://127.0.0.1:8000/public/uploads/personal/prsonal1.jpg",
-                            },
-                            {
-                                id: 10,
-                                mid: 8,
-                                name: "محمد صادقی",
-                                fName: "admin",
-                                img: "http://127.0.0.1:8000/public/uploads/personal/prsonal2.jpg",
-                            },
-                        ]}
+                        treeData={this.dataCreator(secretariats?.data?.data)}
                     />
                 </div>
             </>
