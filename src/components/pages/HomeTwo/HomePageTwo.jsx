@@ -16,10 +16,10 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import "../../../assets/css/mainStyle.css";
 import PosterModal from "../others/posterModal";
-
-
 import LoadingComponent from "../../common/loading.js";
 import HelmetComponent from "../../common/helmet.js";
+import ReactPlayer from 'react-player';
+import Modal from 'react-modal';
 
 class HomePageTwo extends Component {
   constructor(props) {
@@ -30,7 +30,12 @@ class HomePageTwo extends Component {
         language:
                 localStorage.getItem("language") ||
                 process.env.REACT_APP_DEFAULT_LANGUAGE,
-        number: 0
+        number: 0,
+        showModal: false,
+        currentVideoUrl: null,
+        currentVideoTitle: null,
+        currentVideoDescription: null
+      
     };
 }
   static contextType = DataContext; // Using the contextType to access the DataContext
@@ -166,6 +171,72 @@ SupporterCard = ( t ,supporter) => {
   );
 }
 
+openModal = (videoUrl, title, desc) => {
+  this.setState({ 
+    showModal: true, 
+    currentVideoUrl: videoUrl,
+    currentVideoTitle: title,
+    currentVideoDescription: desc
+  });
+};
+
+closeModal = () => {
+  this.setState({ 
+    showModal: false, 
+    currentVideoUrl: null,
+    currentVideoTitle: null,
+    currentVideoDescription: null
+  });
+};
+
+videoCard = (t, video) => {
+  return (
+    <div className="video-card" 
+    onClick={() => this.openModal(process.env.REACT_APP_SERVER_IP + video.path, video.title, video.description)}
+    style={{
+      
+      borderRadius: '10px',
+      overflow: 'hidden',
+      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+      cursor: 'pointer',
+      marginBottom: '20px',
+      backgroundColor: "black",
+      transition: "transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out"
+    }}
+    onMouseOver={(e) => e.currentTarget.style.transform = "scale(1.05)"}
+    onMouseOut={(e) => e.currentTarget.style.transform = "scale(1)"}>
+      <div 
+        style={{position: "relative",}}
+      >
+        <img 
+          src={process.env.REACT_APP_SERVER_IP + video.cover} 
+          alt="Preview" 
+          style={{ 
+            width: '100%',
+            maxHeight: "295px",
+            objectFit: "cover",
+            borderRadius: "7px"
+          }}
+        />
+        <div style={{ 
+            position: "absolute", 
+            padding: '10px', 
+            color: "white", 
+            bottom: "10px", 
+            left: "10px", 
+            right: "10px",
+            backgroundColor: "rgba(0, 0, 0, 0.7)",
+            borderRadius: "7px",
+          }}>
+          <h6 style={{ margin: '5px 0' }}>{video.title}</h6>
+          {/* <p style={{ fontSize: "0.9em" }}>{video.description}</p> */}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
 
 
 toggleZoom = () => {
@@ -261,6 +332,65 @@ renderImagePreview(src, alt) {
 
     return (
       <>
+
+{this.state.showModal && (
+        <Modal 
+        isOpen={this.state.showModal} 
+        onRequestClose={this.closeModal}
+        style={{
+          direction: language==="fa" ? "rtl" : "ltr",
+          overlay: {
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            zIndex: 1000,
+          },
+          content: {
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '70%',
+            height: '95vh', // ارتفاع مدال را به 70% از ارتفاع صفحه تنظیم کرده‌ایم
+            overflow: 'auto',
+            borderRadius: '10px',
+            padding: '20px',
+            zIndex: 1001,
+            display: 'flex',
+            flexDirection: 'column', // استفاده از Flexbox برای ترتیب عناصر
+          }
+        }}
+      >
+        <div style={{ position: 'relative', marginBottom: '20px' }}>
+          <button 
+            onClick={this.closeModal} 
+            style={{
+              position: 'absolute',
+              top: '10px',
+              right: '10px',
+              background: 'none',
+              border: 'none',
+              fontSize: '25px',
+              color: 'red',
+              cursor: 'pointer'
+            }}
+          >
+            &times;
+          </button>
+          <h3 style={{ textAlign: 'center' }}>{this.state.currentVideoTitle}</h3> {/* عنوان ویدیو */}
+        </div>
+        <ReactPlayer 
+          url={this.state.currentVideoUrl} 
+          playing={true} 
+          controls={true} 
+          width='100%'
+          height='100%'
+          style={{ flexGrow: 1 }} // این امکان را فراهم می‌کند تا ویدیو بیشتر فضای موجود را اشغال کند
+        />
+      </Modal>
+      
+      )}
+
+
+
         <div key={this.state.number}>
         <HelmetComponent
             title={this.state.language === "fa" ? hamayeshDetail?.data?.faTitle : hamayeshDetail?.data?.enTitle}
@@ -324,7 +454,33 @@ renderImagePreview(src, alt) {
 
 
 
-        <div className="container" style={{textAlign: "center", marginTop: "100px"}}>
+      
+
+{(hamayeshDetail?.data?.teasers.length > 0) ? (<div className="container" style={{ textAlign: "center", marginTop: "100px" }}>
+        <div className="row">
+          <div className="section-head-style-two" style={{ marginTop: "50px" }}>
+            <h3><span>{t("teasers")}</span></h3>
+          </div>
+          <div className="organ">
+            <Slider {...settings}>
+              {hamayeshDetail?.data?.teasers?.map((video, index) => (
+                this.videoCard(t, video)
+              ))}
+            </Slider>
+          </div>
+        </div>
+      </div>) : null }
+
+
+
+
+
+
+
+
+
+
+        <div className="container" style={{textAlign: "center", marginTop: "200px"}}>
             <div className="row">
               <div className="section-head-style-two"  style={{marginTop: "50px"}}>
                 <h3>

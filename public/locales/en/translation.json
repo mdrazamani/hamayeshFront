@@ -122,5 +122,8 @@
     "conference_404_meta_desc": "Requested page not found - More information about the conference and related events.",
 
     "That_Page_Are_Not_Found": "That Page Are Not Found",
-    "GO_TO_HOME": "GO TO HOME"
+    "GO_TO_HOME": "GO TO HOME",
+    "article_count": "count",
+    "price": "price",
+    "teasers": "teasers"
   }
