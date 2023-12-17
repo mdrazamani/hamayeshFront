@@ -606,7 +606,7 @@ componentDidUpdate(prevProps, prevState) {
                     </div>
                     <div className="inner-btn d-xl-none">
                       <a
-                        href={`http://localhost:3011`}
+                        href={process.env.REACT_APP_ADMIN_PANEL}
                         className="primary-btn-fill"
                       >
                         {t("register_btn")}
@@ -632,7 +632,7 @@ componentDidUpdate(prevProps, prevState) {
                             fontSize: "17px"
                           }}
                           className="primary-btn-fill"
-                          href={`http://localhost:3011`}
+                          href={process.env.REACT_APP_ADMIN_PANEL}
                         >
                           {t("register_btn")}
                         </a>
