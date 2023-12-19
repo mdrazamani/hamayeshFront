@@ -176,11 +176,11 @@ class AxisTree extends Component {
                                     ? "right"
                                     : "left" /*****************/,
                             fontFamily: "Arial, sans-serif",
-                            overflow: "visible",
+                            overflow: "auto",
                             display: "flex", // Flex container
                             alignItems: "center", // Center vertically
                             justifyContent: "center", // Center horizontally
-                            height: "100vh", // Full screen height
+                            // height: "100vh", // Full screen height
                             fontFamily: "mikhak",
                         }}
                     >
@@ -196,7 +196,7 @@ class AxisTree extends Component {
                             paddingBottom={20}
                             padding={25}
                             style={{
-                                overflow: "visible",
+                                overflow: "auto",
                                 margin: "0 auto",
                             }}
                         >

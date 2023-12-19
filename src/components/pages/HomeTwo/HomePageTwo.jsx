@@ -194,7 +194,7 @@ videoCard = (t, video) => {
     <div className="video-card" 
     onClick={() => this.openModal(process.env.REACT_APP_SERVER_IP + video.path, video.title, video.description)}
     style={{
-      
+      margin: "15px",
       borderRadius: '10px',
       overflow: 'hidden',
       boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
