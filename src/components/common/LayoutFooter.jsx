@@ -203,7 +203,7 @@ dataMaker() {
                       <p>
                         {t("Copyright_2021_by_powerfull_Team")}{" "}
                         <Link onClick={this.scrollTop} to={"#"}>
-                          {t("ariaFarman")}
+                          {t("developmentTeam")}
                         </Link>
                       </p>
                     </div>
