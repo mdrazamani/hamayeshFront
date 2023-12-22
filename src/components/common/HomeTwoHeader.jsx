@@ -608,6 +608,7 @@ componentDidUpdate(prevProps, prevState) {
                       <a
                         href={process.env.REACT_APP_ADMIN_PANEL}
                         className="primary-btn-fill"
+                        target="_blank"
                       >
                         {t("register_btn")}
                       </a>
@@ -633,6 +634,7 @@ componentDidUpdate(prevProps, prevState) {
                           }}
                           className="primary-btn-fill"
                           href={process.env.REACT_APP_ADMIN_PANEL}
+                          target="_blank"
                         >
                           {t("register_btn")}
                         </a>
