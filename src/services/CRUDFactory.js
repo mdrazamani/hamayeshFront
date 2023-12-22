@@ -1,4 +1,4 @@
-const apiBaseURL = "http://185.252.86.10:8000/api/v1";
+const apiBaseURL = "http://185.252.86.10:80/backend/api/v1";
 
 let language =
     localStorage.getItem("language") || process.env.REACT_APP_DEFAULT_LANGUAGE;
